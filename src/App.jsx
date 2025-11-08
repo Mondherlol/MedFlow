@@ -9,16 +9,19 @@ import ClinicInfos from "./pages/SuperAdmin/ClinicInfos";
 
 // Clinic pages
 import Home from "./pages/Clinic/Home";
+import Login from "./pages/Clinic/Login";
+import SignUp from "./pages/Clinic/SignUp";
 
 // Other pages
 import Landing from "./pages/Landing";
-import SignUp from "./pages/SignUp";
+import StartClinic from "./pages/StartClinic";
 import NotFound from "./pages/NotFound";
 
 // Components
 import Navbar from "./components/Navbar/Navbar";
 import SuperAdminNavbar from "./components/Navbar/SuperAdminNavbar";
 import Footer from "./components/Footer/Footer";
+import ClinicFooter from "./components/Footer/ClinicFooter";
 import { useAuth } from "./context/authContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ClinicRoute from "./components/ClinicRoute";
@@ -32,7 +35,7 @@ export default function App() {
   return (
     <>
       <Toaster />
-      { user && !authLoading && !clinicLoading && user.role === "SUPER_ADMIN" ?
+      { user && !authLoading && user.role === "SUPER_ADMIN" ?
         <SuperAdminNavbar /> :
         <Navbar />  
       }
@@ -72,7 +75,7 @@ export default function App() {
       {onRoot ? (
         <>
           <Route path="/" element={<Landing />} />
-          <Route path="/signup" element={<SignUp />} />
+          <Route path="/StartClinic" element={<StartClinic />} />
    
         </>
       ) : (
@@ -83,10 +86,23 @@ export default function App() {
                     <Home/>
                   </ClinicRoute>
                 } />
+
+                <Route path="/login" element={
+                  <ClinicRoute>
+                    <Login />
+                  </ClinicRoute>
+                } />
+
+                <Route path="/signup" element={
+                  <ClinicRoute>
+                    <SignUp />
+                  </ClinicRoute>
+                } />
               </>
       )}
       </Routes>
-      <Footer />
+      { onRoot ? <Footer /> : <ClinicFooter /> }
+      
     </>
   );
 }

@@ -199,7 +199,7 @@ export default function Landing() {
             </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
-              <Button href="/signup" iconRight={ArrowRight}>
+              <Button href="/StartClinic" iconRight={ArrowRight}>
                 Commencer gratuitement
               </Button>
               <Button href="/demo" variant="outline">
@@ -423,7 +423,7 @@ export default function Landing() {
             </ul>
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
-              <Button href="/signup" variant="accent" iconRight={ArrowRight}>
+              <Button href="/StartClinic" variant="accent" iconRight={ArrowRight}>
                 Créer mon compte
               </Button>
               <span className="text-sm text-slate-600">
@@ -447,7 +447,7 @@ export default function Landing() {
               qui prépare la consultation. Essayez maintenant — c’est gratuit.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
-              <Button href="/signup" iconRight={ArrowRight}>
+              <Button href="/StartClinic" iconRight={ArrowRight}>
                 Démarrer maintenant
               </Button>
               <Button href="/security" variant="ghost">

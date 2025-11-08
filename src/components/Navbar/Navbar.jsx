@@ -124,7 +124,7 @@ export default function Navbar() {
                 {it.label}
               </button>
             ))}
-            <Link to="/signup" className={`${tokens.cta} ml-2`}>
+            <Link to="/StartClinic" className={`${tokens.cta} ml-2`}>
               Démarrer
             </Link>
           </nav>
@@ -162,7 +162,7 @@ export default function Navbar() {
             ))}
             <div className="p-2">
               <Link
-                to="/signup"
+                to="/StartClinic"
                 className="block w-full text-center rounded-xl px-4 py-2 text-white bg-orange-500 hover:bg-orange-600 transition shadow-sm"
                 onClick={() => setOpen(false)}
               >

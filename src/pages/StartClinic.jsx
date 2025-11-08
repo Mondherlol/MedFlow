@@ -1,4 +1,4 @@
-// src/pages/SignUp.jsx
+// src/pages/StartClinic.jsx
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import api from "../api/axios";
