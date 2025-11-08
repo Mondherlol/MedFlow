@@ -1,5 +1,6 @@
 // src/pages/Landing.jsx
 import { useState } from "react";
+import { motion } from "motion/react";
 import {
   Stethoscope,
   CalendarDays,
@@ -33,10 +34,24 @@ const tokens = {
 };
 
 function Section({ id, className = "", children }) {
+  // simple reveal variant for sections
+  const reveal = {
+    hidden: { opacity: 0, y: 18 },
+    visible: { opacity: 1, y: 0 },
+  };
+
   return (
-    <section id={id} className={`mx-auto max-w-7xl px-6 py-16 ${className}`}>
+    <motion.section
+      id={id}
+      className={`mx-auto max-w-7xl px-6 py-16 ${className}`}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.15 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+      variants={reveal}
+    >
       {children}
-    </section>
+    </motion.section>
   );
 }
 
@@ -87,7 +102,13 @@ function Button({
 
 function FeatureCard({ icon, title, desc }) {
   return (
-    <div className="group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
+    <motion.div
+      className="group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+      initial={{ opacity: 0, y: 14 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.2 }}
+      transition={{ duration: 0.55, ease: "easeOut" }}
+    >
       <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-orange-100 to-orange-100 text-orange-700 ring-1 ring-orange-200">
         {icon}
       </div>
@@ -96,7 +117,7 @@ function FeatureCard({ icon, title, desc }) {
       <div className="mt-3 text-sm text-sky-900/80 opacity-0 transition group-hover:opacity-100 underline decoration-2 underline-offset-4">
         En savoir plus
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -116,7 +137,13 @@ function StepItem({ number, title, desc }) {
 
 function TestimonialCard({ quote, author, role }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
+    <motion.div
+      className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+      initial={{ opacity: 0, y: 14 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.18 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+    >
       <Quote className="mb-3 h-5 w-5 text-orange-600" />
       <p className="text-slate-700">{quote}</p>
       <div className="mt-4 flex items-center gap-3">
@@ -133,7 +160,7 @@ function TestimonialCard({ quote, author, role }) {
           ))}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -144,9 +171,13 @@ function ImageWithFallback({ srcs = [], alt = "", ratio = "16/9", className = ""
   const [failed, setFailed] = useState(false);
   const onError = () => (idx < srcs.length - 1 ? setIdx(idx + 1) : setFailed(true));
   return (
-    <div
+    <motion.div
       className={`relative overflow-hidden rounded-2xl border ${tokens.border} ${tokens.glass} ${className}`}
       style={{ aspectRatio: ratio }}
+      initial={{ opacity: 0, scale: 0.98 }}
+      whileInView={{ opacity: 1, scale: 1 }}
+      viewport={{ once: true, amount: 0.12 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
     >
       {!failed ? (
         <>
@@ -173,7 +204,7 @@ function ImageWithFallback({ srcs = [], alt = "", ratio = "16/9", className = ""
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }
 

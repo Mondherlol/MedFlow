@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { motion } from "motion/react";
 import { 
   MapPin, 
   Phone, 
@@ -90,7 +91,13 @@ export default function Home() {
       </div>
 
       {/* ===================== HERO ===================== */}
-      <section className="relative pt-20 pb-24 md:pb-28">
+      <motion.section
+        className="relative pt-20 pb-24 md:pb-28"
+        initial={{ opacity: 0, y: 18 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.2 }}
+        transition={{ duration: 0.7, ease: "easeOut" }}
+      >
         <div className="absolute inset-0 overflow-hidden rounded-b-[3rem]">
           {clinic.heroImage ? (
             <ClinicImage src={clinic.heroImage} alt="Image principale de la clinique" className="w-full h-full" rounded="rounded-b-[3rem]" />
@@ -103,17 +110,20 @@ export default function Home() {
 
         <div className="relative container mx-auto px-4 text-center text-white">
           <div className="mx-auto max-w-3xl">
-            <div className="mb-4 flex items-center justify-center gap-2">
+            <motion.div className="mb-4 flex items-center justify-center gap-2" initial={{ opacity: 0, y: 8 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.2 }} transition={{ duration: 0.6 }}>
               <InfoPill icon={ShieldCheck} color="text-white" ringColor="ring-white/30">Clinique certifiée</InfoPill>
               <InfoPill icon={Star} color="text-white" ringColor="ring-white/30">4,9/5 patients satisfaits</InfoPill>
-            </div>
-            <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-4 leading-[1.1]">
+            </motion.div>
+
+            <motion.h1 className="text-4xl md:text-5xl font-black tracking-tight mb-4 leading-[1.1]" initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.2 }} transition={{ duration: 0.65 }}>
               {clinic.slogan || "Votre santé, notre priorité"}
-            </h1>
-            <p className="text-lg md:text-xl text-white/90 mb-8">
+            </motion.h1>
+
+            <motion.p className="text-lg md:text-xl text-white/90 mb-8" initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.2 }} transition={{ duration: 0.7, delay: 0.05 }}>
               {clinic.description || "Des soins médicaux de qualité dans un environnement chaleureux et professionnel."}
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            </motion.p>
+
+            <motion.div className="flex flex-col sm:flex-row gap-4 justify-center" initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.2 }} transition={{ duration: 0.7, delay: 0.08 }}>
               <CTAButton
                 className="shadow-lg"
                 style={{ backgroundColor: theme.accent, color: theme.bg, boxShadow: `0 10px 30px -10px ${withAlpha(theme.accent,.8)}` }}
@@ -130,25 +140,33 @@ export default function Home() {
                 Nos services
                 <ArrowRight className="w-4 h-4" />
               </CTAButton>
-            </div>
+            </motion.div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* ===================== LOGIN / PATIENT ===================== */}
-      <LoginCard theme={theme} />
+      <motion.div initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.15 }} transition={{ duration: 0.6 }}>
+        <LoginCard theme={theme} />
+      </motion.div>
 
       {/* ===================== ABOUT ===================== */}
-      <AboutSection clinic={clinic} />
+      <motion.div initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.15 }} transition={{ duration: 0.6 }}>
+        <AboutSection clinic={clinic} />
+      </motion.div>
 
       {/* ===================== SERVICES ===================== */}
-      <ServicesSection clinic={clinic} theme={theme} />
+      <motion.div initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.15 }} transition={{ duration: 0.6 }}>
+        <ServicesSection clinic={clinic} theme={theme} />
+      </motion.div>
 
       {/* ===================== CONTACT ===================== */}
-      <ContactSection clinic={clinic} theme={theme} withAlpha={withAlpha} />
+      <motion.div initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.15 }} transition={{ duration: 0.6 }}>
+        <ContactSection clinic={clinic} theme={theme} withAlpha={withAlpha} />
+      </motion.div>
 
       {/* ===================== FOOTER ===================== */}
-      <footer className="pt-10 pb-8 text-white mt-4" style={{ background: `linear-gradient(135deg, ${withAlpha(theme.primary,.96)}, ${withAlpha(theme.secondary,.96)})` }}>
+      <motion.footer className="pt-10 pb-8 text-white mt-4" style={{ background: `linear-gradient(135deg, ${withAlpha(theme.primary,.96)}, ${withAlpha(theme.secondary,.96)})` }} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.12 }} transition={{ duration: 0.6 }}>
         <div className="container mx-auto px-4 text-center">
           <div className="mb-3 flex items-center justify-center gap-3">
             <InfoPill icon={ShieldCheck} color="text-white" ringColor="ring-white/30">Données protégées</InfoPill>
@@ -156,7 +174,7 @@ export default function Home() {
           </div>
           <p className="opacity-90">&copy; {new Date().getFullYear()} {clinic.name || "Votre Clinique"}. Tous droits réservés.</p>
         </div>
-      </footer>
+      </motion.footer>
     </div>
   );
 }
