@@ -152,7 +152,7 @@ const HomeAdmin = () => {
         {/* KPIs */}
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <StatCard label="Réceptionnistes" value="12" tone="indigo" icon={UserCog} />
-          <StatCard label="Médecins" value="8" tone="emerald" icon={Stethoscope} />
+          <StatCard label="Médecins" value="8" tone="orange" icon={Stethoscope} />
           <StatCard label="Patients" value="1 243" tone="sky" icon={Users} />
           <StatCard label="Clinique" value={clinic?.name || '—'} tone="amber" icon={Building2} />
         </section>
@@ -165,21 +165,21 @@ const HomeAdmin = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <AdminTile
               title="Gérer réceptionnistes"
-              desc="Création, modification et droits d’accès."
+              desc="Les réceptionnistes ont accès à la prise de rendez-vous et aux dossiers patients."
               tone="indigo"
               icon={UserCog}
               onClick={() => navigate('/admin/receptionnistes')}
             />
             <AdminTile
               title="Gérer médecins"
-              desc="Profils, spécialités, planning et disponibilités."
+              desc="Les médecins ont accès aux dossiers patients et à leur planning."
               tone="emerald"
               icon={Stethoscope}
               onClick={() => navigate('/admin/medecins')}
             />
             <AdminTile
               title="Gérer patients"
-              desc="Historique, dossiers et rendez-vous."
+              desc="Consultez et modifiez les dossiers patients de la clinique."
               tone="sky"
               icon={Users}
               onClick={() => navigate('/admin/patients')}
