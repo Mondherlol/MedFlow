@@ -35,7 +35,6 @@ export const ClinicProvider = ({ children }) => {
     let mounted = true;
     getClinicFromTenant(tenant)
       .then((fetchedClinic) => {
-        if (!mounted) return;
         setClinic(fetchedClinic);
       })
         .catch(() => {

@@ -16,7 +16,7 @@ export default function ProtectedRoute({ children }) {
     )
   }
 
-  if (!clinic) {
+  if (!clinic && !loading) {
     // clinic does not exist
     return <NotFound /> 
   }
