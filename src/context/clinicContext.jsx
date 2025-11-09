@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useMemo } from "react";
 import api from "../api/axios";
 import { tenant } from "../tenant";
 
@@ -30,6 +30,12 @@ export const ClinicProvider = ({ children }) => {
   const [clinic, setClinic] = useState();
   const [loading, setLoading] = useState(true);
 
+  const theme = useMemo(() => ({
+        primary: clinic?.primary_color || "#3b82f6",
+        secondary: clinic?.secondary_color || "#1e40af",
+        accent: clinic?.accent_color || "#f59e0b",
+  }), [clinic]);
+
   useEffect(() => {
     // maintenant recuperer la clinique
     let mounted = true;
@@ -50,7 +56,7 @@ export const ClinicProvider = ({ children }) => {
   }, []);
 
   return (
-    <ClinicContext.Provider value={{ clinic, loading }}>
+    <ClinicContext.Provider value={{ clinic, setClinic, loading, theme }}>
       {children}
     </ClinicContext.Provider>
   );

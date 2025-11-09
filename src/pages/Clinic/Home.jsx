@@ -1,46 +1,26 @@
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { 
-  MapPin, 
-  Phone, 
-  Mail, 
-  Clock, 
-  Stethoscope, 
-  Users, 
   Star, 
   ArrowRight,
   Image as ImageIcon,
-  User,
-  LogIn,
   ShieldCheck,
   HeartPulse,
-  Activity,
   CalendarCheck,
 } from "lucide-react";
 
-import { mockClinic, mockClinicBlue } from "./mockClinicData";
+import { withAlpha } from "../../utils/colors";
+
 
 /** -------------------------------------------------------------
  *  Utilities (thème dynamiques + classes)
  *  ------------------------------------------------------------- */
 const cx = (...cls) => cls.filter(Boolean).join(" ");
 
-const withAlpha = (hex, alpha = 1) => {
-  // Support #rrggbb
-  if (!hex || hex[0] !== "#" || (hex.length !== 7 && hex.length !== 4)) return `rgba(0,0,0,${alpha})`;
-  const h = hex.length === 4
-    ? `#${hex[1]}${hex[1]}${hex[2]}${hex[2]}${hex[3]}${hex[3]}`
-    : hex;
-  const r = parseInt(h.slice(1,3),16);
-  const g = parseInt(h.slice(3,5),16);
-  const b = parseInt(h.slice(5,7),16);
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-};
 
 // Use extracted smaller components for clarity + reuse
 import ClinicImage from "../../components/Clinic/ClinicLanding/ClinicImage";
 import InfoPill from "../../components/Clinic/ClinicLanding/InfoPill";
-import Card from "../../components/Clinic/ClinicLanding/Card";
 import CTAButton from "../../components/Clinic/ClinicLanding/CTAButton";
 import ServicesSection from "../../components/Clinic/ClinicLanding/ServicesSection";
 import AboutSection from "../../components/Clinic/ClinicLanding/AboutSection";
@@ -48,21 +28,10 @@ import ContactSection from "../../components/Clinic/ClinicLanding/ContactSection
 import LoginCard from "../../components/Clinic/ClinicLanding/LoginCard";
 import { useClinic } from "../../context/clinicContext";
 
-/** -------------------------------------------------------------
- *  Composant principal
- *  ------------------------------------------------------------- */
-export default function Home() {
-//   const { clinic } = useClinic();
-  const [isLoading, setIsLoading] = useState(true);
-  const clinic = mockClinicBlue; // ⚠️ remplacé par vos données dynamiques plus tard
 
-  const theme = {
-    primary: clinic?.primaryColor || "#3b82f6",
-    secondary: clinic?.secondaryColor || "#1e40af",
-    accent: clinic?.accentColor || "#f59e0b",
-    bg: clinic?.backgroundColor || "#ffffff",
-    text: clinic?.textColor || "#0f172a",
-  };
+export default function Home() {
+  const { clinic, theme } = useClinic();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const t = setTimeout(() => setIsLoading(false), 450);
@@ -81,7 +50,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: theme.bg, color: theme.text }}>
+    <div className="min-h-screen flex flex-col" >
       {/* Décor de fond subtil */}
       <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
         <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full blur-3xl opacity-25"
@@ -126,7 +95,7 @@ export default function Home() {
             <motion.div className="flex flex-col sm:flex-row gap-4 justify-center" initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.2 }} transition={{ duration: 0.7, delay: 0.08 }}>
               <CTAButton
                 className="shadow-lg"
-                style={{ backgroundColor: theme.accent, color: theme.bg, boxShadow: `0 10px 30px -10px ${withAlpha(theme.accent,.8)}` }}
+                style={{ backgroundColor: theme.accent, boxShadow: `0 10px 30px -10px ${withAlpha(theme.accent,.8)}` }}
                 aria-label="Prendre rendez-vous"
               >
                 <CalendarCheck className="w-5 h-5" />

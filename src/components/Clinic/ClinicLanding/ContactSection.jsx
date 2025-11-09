@@ -5,7 +5,7 @@ import { MapPin, Phone, Mail, Clock } from "lucide-react";
 
 export default function ContactSection({ clinic, theme, withAlpha }) {
   return (
-    <section id="contact" className="py-16">
+    <section id="contact" className="py-8">
       <div className="container mx-auto px-4">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl font-bold text-center mb-12">Nous contacter</h2>

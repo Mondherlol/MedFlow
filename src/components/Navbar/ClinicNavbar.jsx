@@ -15,7 +15,7 @@ const tokens = {
         "px-3 py-2 rounded-lg text-slate-700 hover:text-slate-900 hover:bg-sky-50 transition",
     linkActive:
         "px-3 py-2 rounded-lg text-slate-900 bg-sky-50 ring-1 ring-sky-100",
-    cta: "rounded-xl px-4 py-2 text-white bg-orange-500 hover:bg-orange-600 transition shadow-sm",
+    cta: "rounded-xl px-4 py-2 text-white transition shadow-sm",
 };
 
 // Construit une URL vers la home clinic + ancre (#id)
@@ -24,7 +24,7 @@ function clinicHash(hash, base = "/Home") {
 }
 
 export default function ClinicNavbar() {
-    const { clinic } = useClinic();
+    const { clinic, theme } = useClinic();
     const { user , loading,logout } = useAuth();
     const clinicName = clinic?.name || "Clinique";
     const loc = useLocation();
@@ -156,6 +156,7 @@ export default function ClinicNavbar() {
                                 logout();
                             }}
                             className={`${tokens.cta} ml-2 inline-flex items-center gap-2`}
+                            style={{ backgroundColor: theme?.accent }}
                         >
                             <LogOut className="w-4 h-4" />
                             Déconnexion
@@ -166,7 +167,7 @@ export default function ClinicNavbar() {
                         Créer un compte
                     </Link>
 
-                    <Link to="/Login" className={`${tokens.cta} ml-2 inline-flex items-center gap-2`}>
+                    <Link to="/Login" className={`${tokens.cta} ml-2 inline-flex items-center gap-2`} style={{ backgroundColor: theme?.accent }}>
                         <User className="w-4 h-4" />
                         Connexion
                     </Link>
@@ -199,7 +200,7 @@ export default function ClinicNavbar() {
                         <div className="p-2">
                             <button onClick={() => { logout(); 
                                 setOpen(false);
-                            }} className="block w-full text-center rounded-xl px-4 py-2 text-white bg-orange-500 hover:bg-orange-600 transition shadow-sm">
+                            }} className={`${tokens.cta} block w-full text-center`} style={{ backgroundColor: theme?.accent }}>
                                 <span className="inline-flex items-center gap-2 justify-center"><LogOut className="w-4 h-4"/> Déconnexion</span>
                             </button>
                         </div>
@@ -211,7 +212,7 @@ export default function ClinicNavbar() {
                         </div>
 
                         <div className="p-2">
-                            <Link to="/SignUp" className="block w-full text-center rounded-xl px-4 py-2 text-white bg-orange-500 hover:bg-orange-600 transition shadow-sm" onClick={() => setOpen(false)}>
+                            <Link to="/SignUp" className={`${tokens.cta} block w-full text-center`} onClick={() => setOpen(false)} style={{ backgroundColor: theme?.accent }}>
                                 <span className="inline-flex items-center gap-2 justify-center"><User className="w-4 h-4"/> Créer un compte</span>
                             </Link>
                         </div>

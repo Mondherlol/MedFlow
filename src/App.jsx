@@ -12,6 +12,7 @@ import ManageAdmins from "./pages/SuperAdmin/ManageAdmins";
 import Home from "./pages/Clinic/Home";
 import Login from "./pages/Clinic/Login";
 import SignUp from "./pages/Clinic/SignUp";
+import Contact from "./pages/Clinic/Contact";
 
 // Admin pages
 import HomeAdmin from "./pages/Admin/Home";
@@ -23,6 +24,7 @@ import Services from "./pages/Admin/Services";
 import Tarifs from "./pages/Admin/Tarifs";
 import StripeBilling from "./pages/Admin/StripeBilling";
 import Factures from "./pages/Admin/Factures";
+import CustomHome from "./pages/Admin/Clinic/CustomHome";
 
 // Other pages
 import Landing from "./pages/Landing";
@@ -104,8 +106,13 @@ export default function App() {
                     <Home/>
                   </ClinicRoute>
                 } />
-
                 <Route path="/" element={<Navigate to="/home" replace />} />
+
+                <Route path="/contact" element={
+                  <ClinicRoute>
+                    <Contact />
+                  </ClinicRoute>
+                } />
 
                 <Route path="/login" element={
                   <ClinicRoute>
@@ -125,7 +132,8 @@ export default function App() {
                     <HomeAdmin />
                   </ProtectedRoute>
                 </ClinicRoute>
-              } />
+               } />
+
               <Route path="/admin/receptionnistes" element={
                 <ClinicRoute>
                   <ProtectedRoute roles={["ADMIN"]} redirectTo="/login">
@@ -154,6 +162,15 @@ export default function App() {
                   </ProtectedRoute>
                 </ClinicRoute>
               } />
+              
+               <Route path="/admin/clinique/custom-home" element={
+                <ClinicRoute>
+                  <ProtectedRoute roles={["ADMIN"]} redirectTo="/login">
+                    <CustomHome />
+                  </ProtectedRoute>
+                </ClinicRoute>
+               } />
+
               <Route path="/admin/services" element={
                 <ClinicRoute>
                   <ProtectedRoute roles={["ADMIN"]} redirectTo="/login">

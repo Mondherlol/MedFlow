@@ -164,7 +164,7 @@ export default function Services() {
         <div>
           <h2 className="text-2xl font-semibold text-slate-900">Services médicaux</h2>
           <p className="text-sm text-slate-600">
-            Créez, catégorisez et publiez vos actes médicaux.
+           Rajoutez et gérez les services médicaux proposés par votre clinique.
           </p>
         </div>
 

@@ -13,6 +13,7 @@ import {
   Globe,
 } from "lucide-react";
 import { useClinic } from "../../context/clinicContext";
+import { withAlpha } from "../../utils/colors";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -28,16 +29,6 @@ const tokens = {
     "inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-700",
 };
 
-const withAlpha = (hex, a = 1) => {
-  if (!hex || hex[0] !== "#") return `rgba(0,0,0,${a})`;
-  const h = hex.length === 4
-    ? `#${hex[1]}${hex[1]}${hex[2]}${hex[2]}${hex[3]}${hex[3]}`
-    : hex;
-  const r = parseInt(h.slice(1, 3), 16);
-  const g = parseInt(h.slice(3, 5), 16);
-  const b = parseInt(h.slice(5, 7), 16);
-  return `rgba(${r},${g},${b},${a})`;
-};
 
 function homeHash(hash) {
   return `/#${hash.replace(/^#/, "")}`;
@@ -45,20 +36,12 @@ function homeHash(hash) {
 
 export default function ClinicFooter({ showNewsletter = true }) {
   const year = new Date().getFullYear();
-  const { clinic } = useClinic?.() || { clinic: null };
+  const { clinic, theme } = useClinic?.() || { clinic: null };
   const loc = useLocation();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
 
-  const theme = useMemo(
-    () => ({
-      primary: clinic?.primaryColor || "#3b82f6",
-      secondary: clinic?.secondaryColor || "#1e40af",
-      accent: clinic?.accentColor || "#f59e0b",
-      text: "#0f172a",
-    }),
-    [clinic]
-  );
+
 
   const brandGradient = {
     background: `linear-gradient(135deg, ${withAlpha(theme.primary, 1)} 0%, ${withAlpha(
@@ -132,7 +115,7 @@ export default function ClinicFooter({ showNewsletter = true }) {
               {clinic?.twitter && (
                 <a
                   className={`${tokens.iconBtn} hover:opacity-90`}
-                  style={{ background: withAlpha(theme.primary, 0.05) }}
+                  style={{ background: withAlpha(theme.accent, 0.05) }}
                   href={clinic.twitter}
                   target="_blank"
                   rel="noreferrer"
@@ -144,7 +127,7 @@ export default function ClinicFooter({ showNewsletter = true }) {
               {clinic?.linkedin && (
                 <a
                   className={`${tokens.iconBtn} hover:opacity-90`}
-                  style={{ background: withAlpha(theme.primary, 0.05) }}
+                  style={{ background: withAlpha(theme.accent, 0.05) }}
                   href={clinic.linkedin}
                   target="_blank"
                   rel="noreferrer"
@@ -156,7 +139,7 @@ export default function ClinicFooter({ showNewsletter = true }) {
               {clinic?.instagram && (
                 <a
                   className={`${tokens.iconBtn} hover:opacity-90`}
-                  style={{ background: withAlpha(theme.primary, 0.05) }}
+                  style={{ background: withAlpha(theme.accent, 0.05) }}
                   href={clinic.instagram}
                   target="_blank"
                   rel="noreferrer"
@@ -168,7 +151,7 @@ export default function ClinicFooter({ showNewsletter = true }) {
               {clinic?.website && (
                 <a
                   className={`${tokens.iconBtn} hover:opacity-90`}
-                  style={{ background: withAlpha(theme.primary, 0.05) }}
+                  style={{ background: withAlpha(theme.accent, 0.05) }}
                   href={clinic.website}
                   target="_blank"
                   rel="noreferrer"

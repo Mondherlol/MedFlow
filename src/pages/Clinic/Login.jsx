@@ -5,17 +5,7 @@ import { useClinic } from "../../context/clinicContext";
 import toast from "react-hot-toast";
 import api from "../../api/axios";
 import { useAuth } from "../../context/authContext";
-
-const withAlpha = (hex, a = 1) => {
-  if (!hex || hex[0] !== "#") return `rgba(0,0,0,${a})`;
-  const h = hex.length === 4
-    ? `#${hex[1]}${hex[1]}${hex[2]}${hex[2]}${hex[3]}${hex[3]}`
-    : hex;
-  const r = parseInt(h.slice(1, 3), 16);
-  const g = parseInt(h.slice(3, 5), 16);
-  const b = parseInt(h.slice(5, 7), 16);
-  return `rgba(${r},${g},${b},${a})`;
-};
+import { withAlpha } from "../../utils/colors";
 
 const Field = ({ label, children, htmlFor }) => (
   <label htmlFor={htmlFor} className="grid gap-1">
@@ -31,14 +21,9 @@ const Card = ({ className = "", children }) => (
 );
 
   export default function Login() {
-  const { clinic } = useClinic();
+  const { clinic, theme } = useClinic();
   const {user, login, loading : authLoading} = useAuth();
 
-  const theme = useMemo(() => ({
-    primary: clinic?.primaryColor || "#3b82f6",
-    secondary: clinic?.secondaryColor || "#1e40af",
-    accent: clinic?.accentColor || "#f59e0b",
-  }), [clinic]);
 
   const navigate = useNavigate();
 
@@ -126,7 +111,8 @@ const Card = ({ className = "", children }) => (
   }
 
   return (
-    <div className="min-h-[70dvh] relative flex items-center justify-center px-6 py-12" >
+    <div className="min-h-[70dvh] relative flex items-center justify-center px-6 py-12" 
+         style={{ background: `radial-gradient(1000px 500px at 95% -10%, ${withAlpha(theme.primary, .10)} 0%, transparent 55%), radial-gradient(900px 480px at -10% 110%, ${withAlpha(theme.accent, .10)} 0%, transparent 55%), #f8fafc` }}>
       {/* Décor */}
       <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
         <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full blur-3xl opacity-25"
