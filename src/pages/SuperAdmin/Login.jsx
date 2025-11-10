@@ -7,8 +7,8 @@ import Loader from "../../components/Loader";
 export default function SuperAdminLogin() {
   const { user, loading, login, logout } = useAuth(); 
   const navigate = useNavigate();
-  const [email, setEmail] = useState("super@admin.com");
-  const [password, setPassword] = useState("123456");
+  const [email, setEmail] = useState("superadmin@example.com");
+  const [password, setPassword] = useState("string");
   const [err, setErr] = useState("");
 
   useEffect(() => {

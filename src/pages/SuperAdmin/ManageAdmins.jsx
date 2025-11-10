@@ -5,10 +5,6 @@ import api from "../../api/axios";
 import toast from "react-hot-toast";
 import Badge from "../../components/SuperAdmin/Dashboard/Badge";
 
-// NOTE: Assumptions:
-// - GET admins: /api/clinics/{id}/admins/ (returns array in response.data.data or response.data)
-// - Create admin: POST /api/clinics/{id}/admins/ (if different, adjust endpoint)
-// - Update/Delete admin: PATCH/DELETE /api/admin-clinics/{adminId}/
 
 const ManageAdmins = () => {
   const { id } = useParams();
@@ -76,7 +72,6 @@ const ManageAdmins = () => {
       phone: editing.phone,
       clinic_id: id
     };
-    // include password only if set
     if (editing.password) payload.password = editing.password;
 
     api
@@ -122,8 +117,8 @@ const ManageAdmins = () => {
         toast.success("Administrateur créé");
         setShowCreate(false);
         let newAdmin = created;
-        created.id = created.admin.id; // a modifier dans lapi plus tard
-        setAdmins((prev) => [created, ...prev]);
+        newAdmin.id = created.admin.id; // a modifier dans lapi plus tard
+        setAdmins((prev) => [newAdmin, ...prev]);
       })
       .catch((err) => {
         console.error(err);

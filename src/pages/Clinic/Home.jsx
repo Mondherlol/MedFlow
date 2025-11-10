@@ -1,57 +1,48 @@
-import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { 
-  Star, 
-  ArrowRight,
   Image as ImageIcon,
   ShieldCheck,
   HeartPulse,
-  CalendarCheck,
 } from "lucide-react";
 
 import { withAlpha } from "../../utils/colors";
 
 
-/** -------------------------------------------------------------
- *  Utilities (thème dynamiques + classes)
- *  ------------------------------------------------------------- */
-const cx = (...cls) => cls.filter(Boolean).join(" ");
-
-
 // Use extracted smaller components for clarity + reuse
-import ClinicImage from "../../components/Clinic/ClinicLanding/ClinicImage";
 import InfoPill from "../../components/Clinic/ClinicLanding/InfoPill";
-import CTAButton from "../../components/Clinic/ClinicLanding/CTAButton";
 import ServicesSection from "../../components/Clinic/ClinicLanding/ServicesSection";
 import AboutSection from "../../components/Clinic/ClinicLanding/AboutSection";
 import ContactSection from "../../components/Clinic/ClinicLanding/ContactSection";
 import LoginCard from "../../components/Clinic/ClinicLanding/LoginCard";
 import { useClinic } from "../../context/clinicContext";
+import Hero from "../../components/Clinic/ClinicLanding/Hero";
+import { useEffect, useState } from "react";
 
 
 export default function Home() {
-  const { clinic, theme } = useClinic();
-  const [isLoading, setIsLoading] = useState(true);
+  const { clinic, theme, loading } = useClinic();
+  const [layoutReady, setLayoutReady] = useState(false);
 
+  // Rajouter un tout petit chargement de 0.2 sec quand clinique recue
   useEffect(() => {
-    const t = setTimeout(() => setIsLoading(false), 450);
-    return () => clearTimeout(t);
-  }, []);
+    if(!loading && clinic) {
+      const timer = setTimeout(() => {
+        setLayoutReady(true);
+      }, 200);
+      return () => clearTimeout(timer);
+    }
+  }, [loading, clinic]);
 
-  if (!clinic || isLoading) {
-    return (
-      <div className="min-h-screen grid place-items-center" style={{ background: `linear-gradient(180deg, ${withAlpha(theme.primary, .08)} 0%, transparent 60%)` }}>
-        <div className="text-center">
-          <div className="w-14 h-14 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">Chargement de la clinique…</p>
-        </div>
-      </div>
-    );
+
+  if (!clinic ||  !layoutReady) {
+    return <div className="min-h-screen flex items-center justify-center">
+      <div className="w-14 h-14 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
+    </div>;
   }
 
   return (
     <div className="min-h-screen flex flex-col" >
-      {/* Décor de fond subtil */}
+    
       <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
         <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full blur-3xl opacity-25"
              style={{ background: `radial-gradient(ellipse at center, ${withAlpha(theme.primary,.25)}, transparent 60%)` }} />
@@ -67,51 +58,7 @@ export default function Home() {
         viewport={{ once: true, amount: 0.2 }}
         transition={{ duration: 0.7, ease: "easeOut" }}
       >
-        <div className="absolute inset-0 overflow-hidden rounded-b-[3rem]">
-          {clinic.heroImage ? (
-            <ClinicImage src={clinic.heroImage} alt="Image principale de la clinique" className="w-full h-full" rounded="rounded-b-[3rem]" />
-          ) : (
-            <div className="w-full h-full rounded-b-[3rem]"
-                 style={{ background: `linear-gradient(135deg, ${withAlpha(theme.primary,.9)} 0%, ${withAlpha(theme.secondary,.9)} 100%)` }} />
-          )}
-          <div className="absolute inset-0 rounded-b-[3rem]" style={{ background: `linear-gradient(180deg, ${withAlpha('#000',.35)} 0%, ${withAlpha('#000',.55)} 65%, ${withAlpha('#000',.65)} 100%)` }} />
-        </div>
-
-        <div className="relative container mx-auto px-4 text-center text-white">
-          <div className="mx-auto max-w-3xl">
-            <motion.div className="mb-4 flex items-center justify-center gap-2" initial={{ opacity: 0, y: 8 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.2 }} transition={{ duration: 0.6 }}>
-              <InfoPill icon={ShieldCheck} color="text-white" ringColor="ring-white/30">Clinique certifiée</InfoPill>
-              <InfoPill icon={Star} color="text-white" ringColor="ring-white/30">4,9/5 patients satisfaits</InfoPill>
-            </motion.div>
-
-            <motion.h1 className="text-4xl md:text-5xl font-black tracking-tight mb-4 leading-[1.1]" initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.2 }} transition={{ duration: 0.65 }}>
-              {clinic.slogan || "Votre santé, notre priorité"}
-            </motion.h1>
-
-            <motion.p className="text-lg md:text-xl text-white/90 mb-8" initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.2 }} transition={{ duration: 0.7, delay: 0.05 }}>
-              {clinic.description || "Des soins médicaux de qualité dans un environnement chaleureux et professionnel."}
-            </motion.p>
-
-            <motion.div className="flex flex-col sm:flex-row gap-4 justify-center" initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.2 }} transition={{ duration: 0.7, delay: 0.08 }}>
-              <CTAButton
-                className="shadow-lg"
-                style={{ backgroundColor: theme.accent, boxShadow: `0 10px 30px -10px ${withAlpha(theme.accent,.8)}` }}
-                aria-label="Prendre rendez-vous"
-              >
-                <CalendarCheck className="w-5 h-5" />
-                Prendre rendez-vous
-              </CTAButton>
-              <CTAButton
-                className="border-2 text-white hover:bg-white/15"
-                style={{ borderColor: "white" }}
-                aria-label="Voir nos services"
-              >
-                Nos services
-                <ArrowRight className="w-4 h-4" />
-              </CTAButton>
-            </motion.div>
-          </div>
-        </div>
+        <Hero clinic={clinic} theme={theme} />
       </motion.section>
 
       {/* ===================== LOGIN / PATIENT ===================== */}
