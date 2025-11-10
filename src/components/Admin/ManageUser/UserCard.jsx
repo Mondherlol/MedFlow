@@ -6,15 +6,7 @@ import ChangePasswordModal from './ChangePasswordModal';
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
-/**
- * Props:
- * - record (ou {user})
- * - onEdit(record)
- * - onDelete(record)
- * - actionLoading
- * - brandPrimary (optionnel)
- * - variant: 'tile' | 'line' (par défaut: 'tile')
- */
+
 export default function UserCard({
   record,
   onEdit,
@@ -71,6 +63,7 @@ export default function UserCard({
                 {phone && <span className="inline-flex items-center gap-1"><Phone className="w-3.5 h-3.5" /> {phone}</span>}
               </div>
             </div>
+            
 
             <div className="flex items-center gap-2">
               <button
@@ -107,7 +100,7 @@ export default function UserCard({
         <ChangePasswordModal
           isOpen={openChangePwd}
           onClose={() => setOpenChangePwd(false)}
-          userId={record.id}
+          userId={record.user.id}
           onSuccess={() => setOpenChangePwd(false)}
         />
       </>
@@ -177,7 +170,7 @@ export default function UserCard({
       <ChangePasswordModal
         isOpen={openChangePwd}
         onClose={() => setOpenChangePwd(false)}
-        userId={record.id}
+        userId={record.user.id}
         onSuccess={() => setOpenChangePwd(false)}
       />
     </>

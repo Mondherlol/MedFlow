@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { motion } from "motion/react";
 import {
-  Stethoscope,
   CalendarDays,
   FileText,
   UsersRound,

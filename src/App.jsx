@@ -26,6 +26,10 @@ import StripeBilling from "./pages/Admin/StripeBilling";
 import Factures from "./pages/Admin/Factures";
 import CustomHome from "./pages/Admin/Clinic/CustomHome";
 import Horaires from "./pages/Admin/Clinic/Horaires";
+
+// Doctor pages
+import HomeDoctor from "./pages/Doctor/Home";
+
 // Other pages
 import Landing from "./pages/Landing";
 import StartClinic from "./pages/StartClinic";
@@ -216,7 +220,15 @@ export default function App() {
                   </ProtectedRoute>
                 </ClinicRoute>
               } />
+
+              <Route path="/doctor" element={
+                <ClinicRoute>
+                    <HomeDoctor />
+                </ClinicRoute>
+              } />
+
               </>
+
       )}
       </Routes>
       { onRoot ? <Footer /> : <ClinicFooter /> }

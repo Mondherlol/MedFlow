@@ -27,14 +27,22 @@ export default function ChangePasswordModal({ isOpen, onClose, userId, onSuccess
 
     setLoading(true);
     try {
-      const form = new FormData();
-      form.append('password', password);
-      await api.patch(`/api/receptionists/${userId}/`, form, { headers: { 'Content-Type': 'multipart/form-data' } });
+
+      await api.post(`/api/auth/password/admin-force-change/`, {
+        user_id: userId,
+        new_password: password
+      });
       toast.success('Mot de passe mis à jour');
       onSuccess?.();
     } catch (err) {
-      console.error('Error changing password:', err);
-      toast.error('Impossible de changer le mot de passe');
+      if(err.response && err.response.data && err.response.data.detail) {
+        setError(err.response.data.detail);
+        toast.error(err.response.data.detail);
+      }
+      else {
+        setError('Une erreur est survenue. Veuillez réessayer.');
+        toast.error('Une erreur est survenue. Veuillez réessayer.');
+      }
     } finally {
       setLoading(false);
     }
