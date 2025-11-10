@@ -3,7 +3,7 @@ import AdminTemplate from "../../../components/Admin/AdminTemplate";
 import Section from "../../../components/Admin/ManageClinic/Section";
 import { useClinic } from "../../../context/clinicContext";
 import Select from "react-select";
-import { Building2, PenLine, MapPin, Phone, Mail, Globe, Save } from "lucide-react";
+import { Building2, PenLine, MapPin, Phone, Mail, Globe, Save, Loader } from "lucide-react";
 import PhoneInput from "react-phone-number-input";
 import api from "../../../api/axios";
 import toast from "react-hot-toast";
@@ -32,18 +32,45 @@ export default function EditClinic() {
   const [email, setEmail] = useState("");
   const [website, setWebsite] = useState("");
   const [loading, setLoading] = useState(false);
+  const [websiteError, setWebsiteError] = useState("");
 
   useEffect(() => {
-    // initialize from clinic or sample defaults
-    setName(clinic?.name || "Clinique du Parc");
-    // slug display is read-only here (managed by MedFlow provider elsewhere)
-    setAddress(clinic?.address || "123 Avenue du Parc");
+    setName(clinic?.name);
+    setAddress(clinic?.address);
     setCountry(countryOptionsSample.find(c => c.value === clinic?.country) || countryOptionsSample[0]);
-    setCity(clinic?.city || "Tunis");
-    setPhone(clinic?.phone || "+216 71 000 000");
-    setEmail(clinic?.email || "contact@clinique.tn");
-    setWebsite(clinic?.website || "https://clinique.example");
+    setCity(clinic?.city);
+    setPhone(clinic?.phone);
+    setEmail(clinic?.email);
+    setWebsite(clinic?.website);
   }, [clinic]);
+
+  // validate website when it changes: if not empty it must be a valid URL with http/https
+  useEffect(() => {
+    if (!website || website.toString().trim() === "") {
+      setWebsiteError("");
+      return;
+    }
+
+    try {
+      const u = new URL(website);
+      // protocol must be http or https
+      if (u.protocol !== "http:" && u.protocol !== "https:") {
+        setWebsiteError("Le site doit commencer par http:// ou https://");
+        return;
+      }
+
+      // hostname must end with a valid TLD (letters, 2-63 chars) e.g. .com, .fr
+      // This allows multi-level domains (example.co.uk) because it checks the final label
+      if (!/\.[a-z]{2,63}$/i.test(u.hostname)) {
+        setWebsiteError("Le site doit se terminer par un domaine valide (ex: .com, .fr)");
+        return;
+      }
+
+      setWebsiteError("");
+    } catch (e) {
+      setWebsiteError("URL invalide. Exemple: https://example.com");
+    }
+  }, [website]);
 
 
 
@@ -51,6 +78,11 @@ export default function EditClinic() {
     // basic front-end validation
     if (!name || !name.trim()) {
       toast.error("Le nom de la clinique est requis");
+      return;
+    }
+
+    if (websiteError) {
+      toast.error("Veuillez corriger le site web avant d'enregistrer");
       return;
     }
 
@@ -67,8 +99,11 @@ export default function EditClinic() {
         toast.success("Enregistré (réponse inattendue)");
       }
     } catch (err) {
-      console.error(err);
-      toast.error("Erreur lors de la sauvegarde");
+      if(err.response && err.response.data && err.response.data.message) {
+        toast.error(err.response.data.message);
+      } else {
+        toast.error("Erreur lors de la sauvegarde");
+      }
     } finally {
       setLoading(false);
     }
@@ -176,17 +211,32 @@ export default function EditClinic() {
               <div className={tokens.iconInput}><Globe className="h-5 w-5 text-sky-600" /></div>
               <div className="flex-1">
                 <label className="block text-sm font-medium text-slate-700">Site web</label>
-                <input value={website} onChange={(e)=>setWebsite(e.target.value)} className={`${tokens.input} ${tokens.focus}`} />
+                  <input value={website} onChange={(e)=>setWebsite(e.target.value)} className={`${tokens.input} ${tokens.focus}`} />
+                  {websiteError ? (
+                    <p className="text-xs text-rose-600 mt-1">{websiteError}</p>
+                  ) : (
+                    <p className="text-xs text-slate-500 mt-1">Entrez l'URL complète (ex: https://example.com)</p>
+                  )}
               </div>
             </div>
           </div>
 
           <div className="flex items-center justify-end">
-            <button type="button" onClick={onSave}
-                    disabled={loading || !name}
-                    className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white"
+      <button type="button" onClick={onSave}
+        disabled={loading || !name || !!websiteError}
+                    className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
                     style={{ backgroundColor: colors.primary }}>
-              <Save className="w-4 h-4" /> {loading ? 'Enregistrement...' : 'Enregistrer les informations'}
+                    
+             {loading ? 
+             <>
+             <Loader className="w-4 h-4 animate-spin" />
+             Enregistrement...
+             </> :
+             <>
+              <Save className="w-4 h-4" /> 
+             Enregistrer les informations
+              </>
+              }
             </button>
           </div>
         </div>

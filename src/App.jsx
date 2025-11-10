@@ -16,9 +16,9 @@ import Contact from "./pages/Clinic/Contact";
 
 // Admin pages
 import HomeAdmin from "./pages/Admin/Home";
-import Receptionnistes from "./pages/Admin/Receptionnistes";
-import Medecins from "./pages/Admin/Medecins";
-import Patients from "./pages/Admin/Patients";
+import Receptionnistes from "./pages/Admin/GererReceptionnistes";
+import Medecins from "./pages/Admin/GererMedecins";
+import Patients from "./pages/Admin/GererPatients";
 import ClinicInfo from "./pages/Admin/ClinicInfo";
 import Services from "./pages/Admin/Services";
 import Tarifs from "./pages/Admin/Tarifs";
