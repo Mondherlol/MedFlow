@@ -36,8 +36,22 @@ const Card = ({ className = "", children }) => (
 
   useEffect(() => {
     if (user) {
-      // Si deja co aller a la page admin
-      navigate("/admin", { replace: true });
+      switch(user.role) {
+        case "ADMIN":
+          navigate("/admin", { replace: true });
+          break;
+        case "MEDECIN":
+          navigate("/doctor", { replace: true });
+          break;
+        case "RECEPTIONNISTE":
+          navigate("/reception", { replace: true });
+          break;
+        case "PATIENT":
+          navigate("/patient", { replace: true });
+          break;
+        default:
+          navigate("/error", { replace: true });
+      }
     }
   }, [user, navigate]);
 

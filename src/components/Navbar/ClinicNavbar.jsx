@@ -44,6 +44,10 @@ export default function ClinicNavbar() {
         { label: "Tableau de bord", path: "/admin", icon: null},
     ];
 
+    const doctorLinks = [
+        { label: "Tableau de bord", path: "/doctor", icon: null},
+    ];
+
     const isClinicHome = loc.pathname.toLowerCase().includes("home");
 
     const go = (hash) => {
@@ -145,6 +149,12 @@ export default function ClinicNavbar() {
                     ))}
 
                     { user && user.role === "ADMIN" && adminLinks.map((it) => (
+                        <Link key={it.path} to={it.path} className={tokens.link}>
+                            <span className="inline-flex items-center gap-1">{it.icon}{it.label}</span>
+                        </Link>
+                    ))}
+
+                    { user && user.role === "MEDECIN" && doctorLinks.map((it) => (
                         <Link key={it.path} to={it.path} className={tokens.link}>
                             <span className="inline-flex items-center gap-1">{it.icon}{it.label}</span>
                         </Link>
