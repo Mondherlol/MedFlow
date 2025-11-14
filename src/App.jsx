@@ -26,10 +26,23 @@ import StripeBilling from "./pages/Admin/StripeBilling";
 import Factures from "./pages/Admin/Factures";
 import CustomHome from "./pages/Admin/Clinic/CustomHome";
 import Horaires from "./pages/Admin/Clinic/Horaires";
+import EditClinic from "./pages/Admin/Clinic/EditClinic";
+import EditMedia from "./pages/Admin/Clinic/EditMedia";
+
 
 // Doctor pages
 import HomeDoctor from "./pages/Doctor/Home";
 import DoctorHoraires from "./pages/Doctor/HorairesMedecin";
+
+// Receptionnist pages
+import PatientsListPage from "./pages/Receptionnist/PatientsListPage";
+import ReceptionnistHome from "./pages/Receptionnist/Home";
+import CreatePatient from "./pages/Receptionnist/CreatePatient";
+import ReceptionSearch from "./pages/Receptionnist/Search";
+import PatientPage from "./pages/Receptionnist/PatientPage";
+import Doctors from "./pages/Receptionnist/Doctors";
+import Consultations from "./pages/Receptionnist/Consultations";
+import Requests from "./pages/Receptionnist/Requests";
 
 // Other pages
 import Landing from "./pages/Landing";
@@ -46,15 +59,6 @@ import { useAuth } from "./context/authContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ClinicRoute from "./components/ClinicRoute";
 import { Toaster } from "react-hot-toast";
-import EditClinic from "./pages/Admin/Clinic/EditClinic";
-import EditMedia from "./pages/Admin/Clinic/EditMedia";
-import ReceptionnistHome from "./pages/Receptionnist/Home";
-import CreatePatient from "./pages/Receptionnist/CreatePatient";
-import ReceptionSearch from "./pages/Receptionnist/Search";
-import PatientPage from "./pages/Receptionnist/PatientPage";
-import Doctors from "./pages/Receptionnist/Doctors";
-import Consultations from "./pages/Receptionnist/Consultations";
-import Requests from "./pages/Receptionnist/Requests";
 
 export default function App() {
   const onRoot = !tenant; // root domain or localhost
@@ -111,6 +115,7 @@ export default function App() {
    { path: "/reception/consultations", component: Consultations, clinicRoute: true, protectedRoles: ["RECEPTIONNISTE"] },
    { path: "/reception/doctors" ,component: Doctors,  clinicRoute: true, protectedRoles: ["RECEPTIONNISTE"] },
    { path :"/reception/requests", component: Requests, clinicRoute: true, protectedRoles: ["RECEPTIONNISTE"] },
+   { path: "/reception/patients", component: PatientsListPage, clinicRoute: true, protectedRoles: ["RECEPTIONNISTE"] },
 
   ];
 
