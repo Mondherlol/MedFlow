@@ -107,7 +107,7 @@ export default function Home() {
           hours={{ start: 8, end: 18 }}
           slotMinutes={15}
           events={events}
-          availability={availability}
+          availability={schedules}
           onChange={handleChange}
           theme={theme}
         />

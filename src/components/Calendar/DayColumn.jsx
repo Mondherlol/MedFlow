@@ -73,27 +73,34 @@ const DayColumn = React.memo(
         })}
 
         {/* Disponibilités */}
-        {availability.map((a) => {
-          const [sh, sm] = a.start.split(":").map(Number);
-          const [eh, em] = a.end.split(":").map(Number);
-          const startMin = (sh - hours.start) * 60 + (sm || 0);
-          const endMin = (eh - hours.start) * 60 + (em || 0);
-          const top = startMin * (slotHeight / slotMinutes);
-          const height = (endMin - startMin) * (slotHeight / slotMinutes);
-          return (
-            <div
-              key={a.id}
-              className="absolute left-1 right-1 rounded-md"
-              style={{
-                top,
-                height,
-                backgroundColor: `${primary}14`,
-                border: `1px solid ${primary}33`,
-              }}
-              title={`Dispo ${a.start}–${a.end}`}
-            />
-          );
-        })}
+        {(() => {
+          const slots = Array.isArray(availability)
+            ? availability
+            : availability?.slots || [];
+          return slots.map((s, idx) => {
+            if (!s || !s.start || !s.end) return null;
+            const [sh, sm] = String(s.start).split(":").map(Number);
+            const [eh, em] = String(s.end).split(":").map(Number);
+            const startMin = (sh - hours.start) * 60 + (sm || 0);
+            const endMin = (eh - hours.start) * 60 + (em || 0);
+            const top = startMin * (slotHeight / slotMinutes);
+            const height = (endMin - startMin) * (slotHeight / slotMinutes);
+            const key = `${s.id ?? `day${dayIdx}`}-${idx}-${s.start}-${s.end}`;
+            return (
+              <div
+                key={key}
+                className="absolute left-1 right-1 rounded-md"
+                style={{
+                  top,
+                  height,
+                  backgroundColor: `${primary}14`,
+                  border: `1px solid ${primary}33`,
+                }}
+                title={`Dispo ${s.start}–${s.end}`}
+              />
+            );
+          });
+        })()}
 
         {/* Indicateur Drop */}
         {showOver && draggingGhost && overMinutesForDay != null ? (

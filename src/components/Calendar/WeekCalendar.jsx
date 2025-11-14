@@ -15,7 +15,9 @@ import DayColumn from "./DayColumn.jsx";
  * - hours: { start: number, end: number }
  * - slotMinutes: number
  * - events: [{ id, dayIndex, start:"HH:MM", duration, title, status? }]
- * - availability?: [{ id, dayIndex, start, end }]
+ * - availability?: either
+ *     - old format: [{ id, dayIndex, start, end }]
+ *     - new format: [{ id, weekday, slots: [{ start, end }, ...] }]
  * - onChange(updatedEvents)
  * - theme?: { primary, secondary }
  */
@@ -72,6 +74,36 @@ export default function WeekCalendarDnD({
     }
     return arr;
   }, [weekStart]);
+
+  // Normalize availability into an array per day: [[{id,start,end}, ...], ...]
+  const availabilityByDay = useMemo(() => {
+    const byDay = Array.from({ length: 7 }, () => []);
+    (availability || []).forEach((a) => {
+      if (!a) return;
+      // New format: has slots array and a weekday field
+      if (Array.isArray(a.slots)) {
+        const w = Number(a.weekday ?? a.dayIndex);
+        if (Number.isFinite(w) && w >= 0 && w < 7) {
+          a.slots.forEach((s, idx) => {
+            if (!s) return;
+            byDay[w].push({ id: `${a.id ?? `av-${w}`}-${idx}`, start: s.start, end: s.end });
+          });
+        }
+      } else if (a.dayIndex != null) {
+        // Old format single slot
+        const di = Number(a.dayIndex);
+        if (Number.isFinite(di) && di >= 0 && di < 7) {
+          byDay[di].push({ id: a.id ?? `${di}-${a.start}`, start: a.start, end: a.end });
+        }
+      } else if (a.weekday != null && a.start && a.end) {
+        const w = Number(a.weekday);
+        if (Number.isFinite(w) && w >= 0 && w < 7) {
+          byDay[w].push({ id: a.id ?? `${w}-${a.start}`, start: a.start, end: a.end });
+        }
+      }
+    });
+    return byDay;
+  }, [availability]);
 
   const dayNames = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
   const fmt = (d) =>
@@ -286,7 +318,7 @@ export default function WeekCalendarDnD({
               hours={hours}
               slotMinutes={slotMinutes}
               slotHeight={SLOT_HEIGHT}
-              availability={availability.filter((a) => a.dayIndex === dayIdx)}
+              availability={availabilityByDay[dayIdx] || []}
               events={events.filter((e) => e.dayIndex === dayIdx)}
               renderEvent={renderEvent}
               toMinutes={toMinutes}
