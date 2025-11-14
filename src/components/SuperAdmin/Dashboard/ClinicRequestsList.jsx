@@ -8,7 +8,7 @@ import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import Loader from "../../Loader";
 
-const ClinicRequestsList = () => {
+const ClinicRequestsList = ( { fetchStats }) => {
   const [pendingRequests, setPendingRequests] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [requestsPerPage, setRequestsPerPage] = useState(5);
@@ -42,21 +42,18 @@ const ClinicRequestsList = () => {
 
   useEffect(() => {
     fetchRequests();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, requestsPerPage]);
 
   const handleAccept = async (requestId) => {
     if (!requestId) return;
-    // navigate(`/__superadmin/clinic-request/${requestId}`);
     setActionLoading({ id: requestId, type: 'accept' });
     try {
       const response = await api.post(`/api/clinic-requests/${requestId}/approve/`);
       if (response.status === 200) {
         toast.success("Demande acceptée avec succès.");
-        // Rafraîchir la liste
         await fetchRequests();
-        // Notify clinics list to refresh (a clinic may have been created)
         try { window.dispatchEvent(new CustomEvent('clinics:refresh')); } catch (e) { /* noop */ }
+        fetchStats();
       }
     } catch (error) {
       if (error.response) {

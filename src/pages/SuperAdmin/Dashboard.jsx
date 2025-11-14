@@ -1,5 +1,5 @@
 // src/pages/superadmin/Dashboard.jsx
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Building2,
   UsersRound,
@@ -11,13 +11,14 @@ import {
   Ban,
   PlayCircle,
 } from "lucide-react";
-import { useAuth } from "../../context/authContext";
 
 
 import StatCard from "../../components/SuperAdmin/Dashboard/StatCard";
 import Button from "../../components/SuperAdmin/Dashboard/Button";
 import ClinicRequestsList from "../../components/SuperAdmin/Dashboard/ClinicRequestsList";
 import ClinicsList from "../../components/SuperAdmin/Dashboard/ClinicsList";
+import api from "../../api/axios";
+import toast from "react-hot-toast";
 
 const tokens = {
   page: "bg-gradient-to-b from-sky-50 via-white to-white text-slate-800",
@@ -29,15 +30,29 @@ const tokens = {
 };
 
 
-
-const CLINICS = [
-  { id: "CL-001", name: "Clinique Azur",    domain: "azur.medflow.tn",    users: 42, status: "active", uptime: "99.96%", lastIncident: "Il y a 21 j", usage: [12, 18, 22, 25, 20, 27, 30, 28] },
-  { id: "CL-002", name: "Horizon Médical",  domain: "horizon.medflow.tn", users: 31, status: "active", uptime: "99.91%", lastIncident: "Il y a 34 j", usage: [6, 10, 12, 12, 15, 17, 18, 16] },
-  { id: "CL-003", name: "Cardio+",          domain: "cardioplus.medflow.tn", users: 19, status: "paused", uptime: "99.88%", lastIncident: "Il y a 12 j", usage: [2, 4, 5, 7, 6, 5, 4, 3] },
-];
-
-
 export default function SuperAdminDashboard() {
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const fetchStats = () => {
+    setLoading(true);
+    api.get("/api/superadmin-stats/summary/")
+      .then((response) => {
+        setStats(response.data);
+        console.log(response.data);
+      })
+      .catch((error) => {
+        toast.error("Erreur lors du chargement des statistiques.");
+        console.error("Error fetching stats:", error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
 
   return (
     <main className={`min-h-screen ${tokens.page}`}>
@@ -53,9 +68,6 @@ export default function SuperAdminDashboard() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            {/* <Button variant="orange" className={tokens.focus}>
-              Créer une clinique
-            </Button> */}
             <Button variant="orange" className={`hidden sm:inline-flex ${tokens.focus}`}>
               <PlayCircle className="h-4 w-4" />
               Démarrer une démo
@@ -67,62 +79,19 @@ export default function SuperAdminDashboard() {
           </div>
         </div>
 
-        {/* KPI */}
+  
         <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard icon={<Building2 className="h-5 w-5" />} label="Cliniques actives" value="24" sub="+3 ce mois" />
-          <StatCard icon={<Clock className="h-5 w-5" />}     label="Demandes en attente" value="44" sub="Réponse moyenne 12h" />
-          <StatCard icon={<UsersRound className="h-5 w-5" />} label="Utilisateurs totaux" value="1 124" sub="+86 cette semaine" />
-          <StatCard icon={<Activity className="h-5 w-5" />}   label="Disponibilité globale" value="99.93%" sub="30j glissants" />
+          <StatCard icon={<Building2 className="h-5 w-5" />} label="Cliniques actives" value={stats?.clinics_active} sub={`+${stats?.clinics_created_this_month} ce mois`}  loading={loading}/>
+          <StatCard icon={<Clock className="h-5 w-5" />}     label="Demandes en attente" value={stats?.clinic_requests_pending} sub={`Réponse moyenne ${stats?.avg_response_days}h`} loading={loading} />
+          <StatCard icon={<UsersRound className="h-5 w-5" />} label="Utilisateurs totaux" value={stats?.users_total} sub={`+${stats?.users_created_this_week} cette semaine`} loading={loading} />
+          <StatCard icon={<Activity className="h-5 w-5" />}   label="Disponibilité globale" value={stats?.clinics_active_percent+"%"} sub="30j glissants" loading={loading} />
         </div>
-
+        
         {/* Demandes de création */}
-        <ClinicRequestsList />
+        <ClinicRequestsList fetchStats={fetchStats} />
 
         {/* Gestion des cliniques */}
-        <ClinicsList tokens={tokens} clinics={CLINICS} />
-
-        {/* Usage par clinique */}
-        {/* <Section
-          title="Utilisation de l’app par clinique"
-          right={<Button variant="ghost" className="text-sm">Voir tout <ArrowUpRight className="h-4 w-4" /></Button>}
-        >
-          <div className="grid gap-4 md:grid-cols-3">
-            {CLINICS.map((c) => (
-              <div key={c.id} className={`${tokens.card} ${tokens.cardHover} p-4`}>
-                <div className="mb-2 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="grid h-8 w-8 place-items-center rounded-lg bg-sky-100 text-sky-800 ring-1 ring-sky-200">
-                      <Building2 className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <div className="text-sm font-medium leading-tight">{c.name}</div>
-                      <div className="text-xs text-slate-500">{c.domain}</div>
-                    </div>
-                  </div>
-                  {c.status === "active" ? <Badge color="green">Active</Badge> : <Badge color="gray">En pause</Badge>}
-                </div>
-
-                <UsageChart points={c.usage} className="mt-2" />
-
-                <div className="mt-3 flex items-center justify-between text-xs text-slate-600">
-                  <div className="flex items-center gap-1">
-                    <UsersRound className="h-4 w-4 text-slate-400" />
-                    {c.users} utilisateurs
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Activity className="h-4 w-4 text-emerald-600" />
-                    Uptime {c.uptime}
-                  </div>
-                </div>
-
-                <div className="mt-3 flex gap-2">
-                  <Button variant="subtle" className="px-3 py-1.5 text-xs">Admins</Button>
-                  <Button variant="subtle" className="px-3 py-1.5 text-xs">Paramètres</Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Section> */}
+        <ClinicsList tokens={tokens} fetchStats={fetchStats} />
 
         {/* Bandeau bas (actions rapides) */}
         <div className="mt-10 grid gap-4 md:grid-cols-2">

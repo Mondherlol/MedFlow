@@ -22,24 +22,20 @@ import { useNavigate } from "react-router-dom";
 import api from "../../../api/axios";
 import toast from "react-hot-toast";
 
-export default function ClinicsList({ tokens }) {
+export default function ClinicsList({ tokens , fetchStats }) {
   const navigate = useNavigate();
   const [search, setSearch] = useState(""); // bound to input
   const [status, setStatus] = useState("all");
   const [clinics, setClinics] = useState([]);
-  // show ~5 items in the visible list by default; the list itself will be scrollable
   const [meta, setMeta] = useState({ total: 0, page: 1, perPage: 5, totalPages: 1 });
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(5);
   const [isLoading, setIsLoading] = useState(true);
-  // per-row loading state to avoid reloading entire list when toggling a single clinic
   const [loadingRows, setLoadingRows] = useState({});
-  // UI state for per-row menu/modal/delete
   const [activeMenuId, setActiveMenuId] = useState(null);
   const [slugModal, setSlugModal] = useState({ open: false, clinic: null, value: "" });
   const [deleteConfirm, setDeleteConfirm] = useState({ open: false, clinic: null });
 
-  // Fetch clinics from server when search/page/perPage/status change.
   useEffect(() => {
     let mounted = true;
     const controller = new AbortController();
@@ -85,7 +81,6 @@ export default function ClinicsList({ tokens }) {
     };
   }, [search, page, perPage, status]);
 
-  // Keep latest params in a ref so event handler can read them and trigger an immediate reload
   const paramsRef = useRef({ search, page, perPage, status });
   useEffect(() => {
     paramsRef.current = { search, page, perPage, status };
@@ -110,6 +105,8 @@ export default function ClinicsList({ tokens }) {
           setPage(response.data.meta.page || 1);
           setPerPage(response.data.meta.perPage || pp);
         }
+
+        fetchStats();
       }
     } catch (err) {
       toast.error("Erreur lors de la récupération des cliniques.");
@@ -161,14 +158,11 @@ export default function ClinicsList({ tokens }) {
     try {
       const resp = await api.post(`/api/clinics/${clinicId}/set_status/`, { status: newStatus });
 
-      // Update only the affected clinic in local state. Prefer server response if it returns updated clinic.
       setClinics((prev) =>
         prev.map((c) => {
           if (c.id !== clinicId) return c;
-          // If server returned the updated clinic object, merge it. Otherwise apply the new status.
           const updated = resp && resp.data ? resp.data : null;
           if (updated && typeof updated === 'object') {
-            // try to map common shapes: { id, name, status, ... } or { data: { ... } }
             const candidate = updated.data && updated.data.id ? updated.data : updated;
             return { ...c, ...candidate };
           }
@@ -179,6 +173,7 @@ export default function ClinicsList({ tokens }) {
       if (resp && resp.status === 200) {
         let etat = newStatus === "ACTIVE" ? "réactivée" : "mise en pause";
         toast.success(`Clinique ${etat} avec succès`);
+        fetchStats();
       } else {
         // generic success message if non-200 but no error thrown
         let etat = newStatus === "ACTIVE" ? "réactivée" : "mise en pause";
