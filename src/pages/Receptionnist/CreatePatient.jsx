@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import ReceptionistTemplate from "../../components/Receptionist/ReceptionistTemplate";
+import ReceptionistTemplate from "../../components/Reception/ReceptionTemplate";
 import { useClinic } from "../../context/clinicContext";
 import PhoneInput from "react-phone-number-input";
 import api from "../../api/axios";
@@ -68,7 +68,7 @@ function CreatePatient() {
 
             const res = await api.post("/api/patients/", form);
             if (res.status === 201 || (res.status === 200 && res.data)) {
-                setCreatedPatient(res.data);
+                setCreatedPatient(res.data.user);
                 toast.success("Patient créé");
             } else {
                 toast.success("Créé (réponse inattendue)");
@@ -134,9 +134,9 @@ function CreatePatient() {
                             <label className="text-sm font-medium text-slate-700">Genre</label>
                             <select value={genre} onChange={(e)=>setGenre(e.target.value)} className={`${tokens.input} ${tokens.focus} mt-1`}>
                                 <option value="">Sélectionner</option>
-                                <option value="male">Homme</option>
-                                <option value="female">Femme</option>
-                                <option value="other">Autre / Préfère ne pas dire</option>
+                                <option value="HOMME">Homme</option>
+                                <option value="FEMME">Femme</option>
+                                <option value="AUTRE">Autre / Préfère ne pas dire</option>
                             </select>
                         </div>
                     </div>

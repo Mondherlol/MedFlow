@@ -1,16 +1,11 @@
 // ReceptionnistHome.jsx
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Users,
   CalendarDays,
   PlusCircle,
   Search,
-  Phone,
-  Mail,
-  Clock,
-  Check,
-  X,
   Bell
 } from "lucide-react";
 import { useClinic } from "../../context/clinicContext";
@@ -123,8 +118,8 @@ export default function ReceptionnistHome() {
   function onSearch(e) {
     e?.preventDefault?.();
     const q = (query || "").trim();
-    if (!q) return navigate('/receptionnist/search');
-    navigate(`/receptionnist/search?q=${encodeURIComponent(q)}`);
+    if (!q) return navigate('/reception/search');
+    navigate(`/reception/search?q=${encodeURIComponent(q)}`);
   }
 
   // split lists for "now" and "upcoming"
@@ -149,7 +144,7 @@ export default function ReceptionnistHome() {
             </div>
             <div className="flex items-center gap-2">
               <button
-                onClick={() => navigate("/receptionnist/requests")}
+                onClick={() => navigate("/reception/requests")}
                 className="relative inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white shadow-sm border"
                 title="Demandes de RDV"
                 style={{ borderColor: "#e6edf3" }}
@@ -218,9 +213,9 @@ export default function ReceptionnistHome() {
           </div>
 
           <div className="space-y-3">
-            <ActionTile to="/receptionnist/patients/new" title="Créer un patient" desc="Ajouter un nouveau dossier" Icon={PlusCircle} accent={primaryColor} />
-            <ActionTile to="/receptionnist/appointments/requests" title="Demandes de RDV" desc="Consulter et valider" Icon={CalendarDays} accent={accentColor} badgeCount={stats.requests} />
-            <ActionTile to="/receptionnist/doctors" title="Médecins" desc="Voir emplois du temps" Icon={Users} accent={primaryColor} />
+            <ActionTile to="/reception/patients/new" title="Créer un patient" desc="Ajouter un nouveau dossier" Icon={PlusCircle} accent={primaryColor} />
+            <ActionTile to="/reception/requests" title="Demandes de RDV" desc="Consulter et valider" Icon={CalendarDays} accent={accentColor} badgeCount={stats.requests} />
+            <ActionTile to="/reception/doctors" title="Médecins" desc="Voir emplois du temps" Icon={Users} accent={primaryColor} />
           </div>
         </section>
 
@@ -230,7 +225,7 @@ export default function ReceptionnistHome() {
           <div className="bg-white rounded-2xl p-4 shadow-sm hover:shadow-lg transition-border duration-150 border border-slate-50">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-semibold">Check-ins — Maintenant</h2>
-              <Link to="/receptionnist/checkins" className="text-xs font-medium text-slate-600">Voir tout</Link>
+              <Link to="/reception/checkins" className="text-xs font-medium text-slate-600">Voir tout</Link>
             </div>
 
             {nowConsultations.length ? (
@@ -256,7 +251,7 @@ export default function ReceptionnistHome() {
           <div className="bg-white rounded-2xl p-4 shadow-sm hover:shadow-lg transition-border duration-150 border border-slate-50">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-semibold">Prochains rendez-vous</h2>
-              <Link to="/receptionnist/appointments" className="text-xs font-medium text-slate-600">Voir la journée</Link>
+              <Link to="/reception/consultations" className="text-xs font-medium text-slate-600">Voir la journée</Link>
             </div>
 
             <div className="space-y-2">

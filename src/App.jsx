@@ -50,6 +50,11 @@ import EditClinic from "./pages/Admin/Clinic/EditClinic";
 import EditMedia from "./pages/Admin/Clinic/EditMedia";
 import ReceptionnistHome from "./pages/Receptionnist/Home";
 import CreatePatient from "./pages/Receptionnist/CreatePatient";
+import ReceptionSearch from "./pages/Receptionnist/Search";
+import PatientPage from "./pages/Receptionnist/PatientPage";
+import Doctors from "./pages/Receptionnist/Doctors";
+import Consultations from "./pages/Receptionnist/Consultations";
+import Requests from "./pages/Receptionnist/Requests";
 
 export default function App() {
   const onRoot = !tenant; // root domain or localhost
@@ -101,6 +106,12 @@ export default function App() {
   const receptionnistRoutes = [
    { path: "/reception", component: ReceptionnistHome, clinicRoute: true, protectedRoles: ["RECEPTIONNISTE"] },
    { path: "/reception/patients/new", component: CreatePatient, clinicRoute: true, protectedRoles: ["RECEPTIONNISTE"] },
+   { path: "/reception/search", component: ReceptionSearch, clinicRoute: true, protectedRoles: ["RECEPTIONNISTE"] },
+   { path: "/reception/patients/:id", component: PatientPage, clinicRoute: true, protectedRoles: ["RECEPTIONNISTE"] },
+   { path: "/reception/consultations", component: Consultations, clinicRoute: true, protectedRoles: ["RECEPTIONNISTE"] },
+   { path: "/reception/doctors" ,component: Doctors,  clinicRoute: true, protectedRoles: ["RECEPTIONNISTE"] },
+   { path :"/reception/requests", component: Requests, clinicRoute: true, protectedRoles: ["RECEPTIONNISTE"] },
+
   ];
 
   const clinicRoutes = [...clinicPublicRoutes, ...adminRoutes, ...doctorRoutes, ...receptionnistRoutes];
