@@ -46,7 +46,7 @@ export default function ClinicNavbar() {
 
     const doctorLinks = [
         { label: "Tableau de bord", path: "/doctor", icon: null},
-        { label: "Horaires", path: "/doctor/horaires", icon: null},
+        { label: "Emploi du temps", path: "/doctor/emploi", icon: null},
     ];
 
     const receptionnistLinks = [

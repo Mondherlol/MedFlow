@@ -86,9 +86,7 @@ export default function EmploiMedecin() {
     };
   }, [user]);
 
-  if(isLoading) {
-    return <div>Loading...</div>;
-  }
+
 
   return (
     <div className="min-h-[80dvh] bg-linear-to-b from-slate-50 to-slate-100/40 p-6 md:p-10">
