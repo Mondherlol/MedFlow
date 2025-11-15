@@ -7,13 +7,6 @@ import { useAuth } from "../../context/authContext";
 import { useClinic } from "../../context/clinicContext";
 import toast from "react-hot-toast";
 
-/*
-  Page d'accueil médecin — design inspiré de ReceptionnistHome.jsx
-  - Timeline compacte à gauche (scroll interne) et RDV alignés à droite, fusionnés.
-  - Pas de création de RDV depuis cette page (médecin ne crée pas).
-  - Actions limitées : Reporter, Annuler.
-  - Mock data pour démonstration; remplace par fetch API si nécessaire.
-*/
 
 /* ---------- Mock events (à remplacer par ton API) ---------- */
 const MOCK_EVENTS = [
@@ -303,12 +296,7 @@ export default function Home() {
               Bonjour,&nbsp;<span className="font-medium text-slate-900">{user?.doctor?.user?.full_name || user?.name || "Médecin"}</span>
             </div>
 
-            <div className="hidden md:flex items-center gap-3">
-              <div className="px-3 py-2 bg-white rounded-full border border-slate-100 shadow-sm text-sm">
-                <div className="text-xs text-slate-400">Clinique</div>
-                <div className="font-medium text-slate-800">{clinic?.name || "Clinique"}</div>
-              </div>
-            </div>
+        
           </div>
         </header>
 

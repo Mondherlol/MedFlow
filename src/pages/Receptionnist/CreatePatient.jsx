@@ -68,7 +68,8 @@ function CreatePatient() {
 
             const res = await api.post("/api/patients/", form);
             if (res.status === 201 || (res.status === 200 && res.data)) {
-                setCreatedPatient(res.data.user);
+                setCreatedPatient(res.data);
+                console.log("Patient created:", res.data);
                 toast.success("Patient créé");
             } else {
                 toast.success("Créé (réponse inattendue)");
@@ -173,12 +174,12 @@ function CreatePatient() {
                                 </div>
                                 <div className="flex-1">
                                     <h2 className="text-lg font-semibold">Patient enregistré</h2>
-                                    <p className="text-sm text-slate-600 mt-1">{createdPatient.full_name || createdPatient.email} a bien été ajouté.</p>
+                                    <p className="text-sm text-slate-600 mt-1">{createdPatient.user.full_name || createdPatient.user.email} a bien été ajouté.</p>
                                 </div>
                             </div>
                             <div className="mt-5 flex gap-3 justify-end">
                                 <button onClick={()=>{ setCreatedPatient(null); navigate('/reception'); }} className="px-4 py-2 rounded-md bg-slate-100 text-sm">Retour à l'accueil</button>
-                                <button onClick={()=>{ navigate('/consultation', { state: { patientId: createdPatient.id } }); }} className="px-4 py-2 rounded-md bg-sky-600 text-white">Créer un RDV</button>
+                                <button onClick={()=>{ navigate('/reception/consultations/new?patientId=' + createdPatient.patient.id); }} className="px-4 py-2 rounded-md bg-sky-600 text-white">Créer un RDV</button>
                             </div>
                         </div>
                     </div>
