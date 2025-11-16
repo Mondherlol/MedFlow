@@ -17,6 +17,8 @@ export default function WeekCalendarDnD({
   consultations = [],
   availability = [],
   onChange,
+  onEventClick,
+  editMode,
   theme = {},
   consultationProvisoire,
   setConsultationProvisoire,
@@ -395,6 +397,8 @@ const normalizedConsultations = useMemo(() => {
               isOver={overDayIndex === dayIdx}
               overMinutesForDay={overDayIndex === dayIdx ? overMinutes : null}
               draggingGhost={ghost}
+              onEventClick={onEventClick}
+              editMode={editMode}
             />
           ))}
         </div>

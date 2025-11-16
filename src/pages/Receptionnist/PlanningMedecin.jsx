@@ -7,26 +7,12 @@ import { useClinic } from "../../context/clinicContext";
 import toast from "react-hot-toast";
 import { getImageUrl } from "../../utils/image.jsx";
 import { formatDateYMD, getMonday } from "../../utils/dateUtils";
-import { Calendar, Phone } from "lucide-react";
+import ModificationsPanel from "../../components/Reception/ModificationsPanel/ModificationsPanel";
+import EditConsultationFloatingForm from "../../components/Reception/EditConsultationFloatingForm";
 
-const statusMap = {
-  available: { label: "Disponible", color: "bg-emerald-100 text-emerald-700", dot: "bg-emerald-500" },
-  busy: { label: "En consultation", color: "bg-amber-100 text-amber-800", dot: "bg-amber-600" },
-  leave: { label: "En congé", color: "bg-slate-100 text-slate-600", dot: "bg-slate-500" },
-  unknown: { label: "Indisponible", color: "bg-red-100 text-red-700", dot: "bg-red-600" },
-};
-
-function getDoctorStatus(d) {
-  if (!d) return "unknown";
-  if (d.on_leave || d.status === "leave") return "leave";
-  if (d.currently_in_consultation || d.status === "busy" || d.status === "consulting") return "busy";
-  if (d.is_available || d.status === "available") return "available";
-  return "unknown";
-}
 
 export default function PlanningMedecin() {
   const { id } = useParams();
-  const navigate = useNavigate();
   const { clinic, theme } = useClinic() || {};
 
   const primaryColor = theme?.primary || "#06b6d4";
@@ -40,6 +26,9 @@ export default function PlanningMedecin() {
   const [loadingConsultations, setLoadingConsultations] = useState(false);
 
   const [weekStart, setWeekStart] = useState(() => getMonday(new Date()));
+  const [editMode, setEditMode] = useState(false);
+  const [modified, setModified] = useState({}); // { [id]: { original, modified } }
+  const [selectedConsultation, setSelectedConsultation] = useState(null);
 
   useEffect(() => {
     if (!id) return;
@@ -90,7 +79,20 @@ export default function PlanningMedecin() {
       const formatedStart = formatDateYMD(new Date(startDate));
       const formatedEnd = formatDateYMD(new Date(endDate));
       const res = await api.get(`/api/consultations/by-doctor/?doctor=${doctorId}&week_start=${formatedStart}&week_end=${formatedEnd}&perPage=200`);
-      setConsultations(res.data?.data || res.data || []);
+      const fetched = res.data?.data || res.data || [];
+
+      // overlay any local modifications so they persist across week changes
+      if (Object.keys(modified || {}).length > 0) {
+        const byId = { ...modified };
+        const merged = fetched.map((c) => {
+          const m = byId[c.id] || byId[String(c.id)];
+          if (!m) return c;
+          return { ...c, ...m.modified };
+        });
+        setConsultations(merged);
+      } else {
+        setConsultations(fetched);
+      }
     } catch (err) {
       console.error(err);
       toast.error("Impossible de charger les consultations du médecin");
@@ -114,8 +116,196 @@ export default function PlanningMedecin() {
     setWeekStart(getMonday(d));
   }
 
-  const statusKey = getDoctorStatus(doctor);
-  const st = statusMap[statusKey] || statusMap.unknown;
+  // handler called by WeekCalendar when a consultation is moved/edited
+  function handleCalendarChange(payload) {
+    // payload can be a single object or an array of objects.
+    if (!editMode) {
+      toast("Activez le mode édition");
+      return;
+    }
+
+    const hhmmToMinutes = (s) => {
+      if (!s) return 0;
+      const [h, m] = (s || "00:00").split(":").map((n) => parseInt(n, 10));
+      return (h || 0) * 60 + (m || 0);
+    };
+    const minutesToHhmm = (min) => {
+      const h = Math.floor(min / 60);
+      const m = min % 60;
+      return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+    };
+
+    const handleOne = (updated) => {
+      if (!updated) return;
+      const idKey = updated.id || updated.id_consultation || updated.consultation_id || (updated.consultation && updated.consultation.id);
+      if (!idKey) {
+        console.warn("Calendar change: missing id", updated);
+        return;
+      }
+
+      const normalized = { ...updated };
+
+      // update consultations state and capture original only if something changed
+      setConsultations((prev) => {
+        const idx = prev.findIndex((c) => String(c.id) === String(idKey));
+        const original = idx >= 0 ? prev[idx] : null;
+        if (!original) return prev;
+
+        const fieldsToCheck = ["date", "start", "heure_debut", "heure_fin", "start_time", "end_time"];
+        const changed = fieldsToCheck.some((f) => {
+          if (normalized[f] === undefined) return false;
+          return String(normalized[f]) !== String(original[f]);
+        });
+
+        if (!changed) return prev;
+
+        // compute original duration in minutes
+        let origDuration = 0;
+        if (original.heure_debut && original.heure_fin) {
+          origDuration = hhmmToMinutes(original.heure_fin) - hhmmToMinutes(original.heure_debut);
+        } else if (original.start && original.end) {
+          origDuration = hhmmToMinutes(original.end) - hhmmToMinutes(original.start);
+        } else if (original.doctor && Number.isFinite(original.doctor.duree_consultation)) {
+          origDuration = Number(original.doctor.duree_consultation);
+        } else if (Number.isFinite(original.duration)) {
+          origDuration = Number(original.duration);
+        }
+        if (!Number.isFinite(origDuration) || origDuration <= 0) origDuration = 15;
+
+        // determine new start string
+        const newStart = normalized.heure_debut || normalized.start || normalized.start_time || original.heure_debut || original.start;
+        // compute new end based on original duration
+        const newEnd = minutesToHhmm(hhmmToMinutes(newStart) + origDuration);
+
+        // include heure_fin so normalizedConsultations preserves duration after move
+        const normalizedWithEnd = { ...normalized, heure_fin: newEnd, end: newEnd };
+
+        const modifiedObj = { ...(original || {}), ...normalizedWithEnd };
+
+        // store in modified map
+        setModified((mPrev) => ({ ...mPrev, [idKey]: { original, modified: modifiedObj } }));
+
+        const next = [...prev];
+        next[idx] = { ...next[idx], ...normalizedWithEnd };
+        return next;
+      });
+    };
+
+    if (Array.isArray(payload)) {
+      payload.forEach((p) => handleOne(p));
+    } else {
+      handleOne(payload);
+    }
+  }
+
+  function handleEventClick(ev) {
+    if (!editMode) return;
+    // ev is the raw consultation object from server
+    setSelectedConsultation(ev);
+  }
+
+  function handleCancelEdits() {
+    setModified({});
+    setEditMode(false);
+  }
+
+  function handleCancelModification(idKey) {
+    if (!idKey) return;
+    setModified((prev) => {
+      const copy = { ...prev };
+      delete copy[idKey];
+      return copy;
+    });
+  }
+
+  function handleRevertModification(idKey) {
+    if (!idKey) return;
+    setModified((prev) => {
+      const copy = { ...prev };
+      const entry = copy[idKey];
+      if (!entry) return prev;
+
+      setConsultations((cPrev) => {
+        const idx = cPrev.findIndex((c) => String(c.id) === String(idKey));
+        if (idx === -1) return cPrev;
+        const next = [...cPrev];
+        next[idx] = { ...entry.original };
+        return next;
+      });
+
+      delete copy[idKey];
+      return copy;
+    });
+  }
+
+  function handleCloseEditForm() {
+    setSelectedConsultation(null);
+  }
+
+  // Called after EditConsultationFloatingForm saves successfully
+  function handleSavedFromForm(entry, apiResponse) {
+    // entry: { original, modified }
+    const idKey = entry.modified.id || entry.modified.id_consultation || entry.modified.consultation_id || entry.original?.id;
+    if (!idKey) return;
+
+    // store in modified map
+    setModified((mPrev) => ({ ...mPrev, [idKey]: { original: entry.original, modified: entry.modified } }));
+
+    // update consultations array
+    setConsultations((prev) => prev.map((c) => (String(c.id) === String(idKey) ? { ...c, ...entry.modified } : c)));
+  }
+
+  async function saveSettings() {
+    const entries = Object.values(modified);
+    const promises = entries.map((e) => {
+      const idVal = e.modified.id || e.modified.id_consultation || e.modified.consultation_id || e.id;
+      if (!idVal) return Promise.resolve(null);
+
+      const payload = {};
+      // support both english and french time fields
+      if (e.modified.date && e.original && e.modified.date !== e.original.date) payload.date = e.modified.date;
+      if (e.modified.start && e.original && e.modified.start !== e.original.start) payload.start = e.modified.start;
+      if (e.modified.heure_debut && e.original && e.modified.heure_debut !== e.original.heure_debut) payload.heure_debut = e.modified.heure_debut;
+      if (e.modified.heure_fin && e.original && e.modified.heure_fin !== e.original.heure_fin) payload.heure_fin = e.modified.heure_fin;
+      // include other fields if needed
+
+      if (Object.keys(payload).length === 0) return Promise.resolve(null);
+
+      return api.patch(`/api/consultations/${idVal}/`, payload).then((res) => ({ id: idVal, res: res.data || res }));
+    });
+
+    return Promise.all(promises);
+  }
+
+  async function handleSave() {
+    try {
+      await toast.promise(
+        saveSettings(),
+        {
+          loading: "Saving...",
+          success: <b>Settings saved!</b>,
+          error: <b>Could not save.</b>,
+        }
+      );
+
+      // update consultations state with modified values where present
+      setConsultations((prev) => {
+        const byId = { ...modified };
+        return prev.map((c) => {
+          const m = byId[c.id] || byId[String(c.id)];
+          if (!m) return c;
+          return { ...c, ...m.modified };
+        });
+      });
+
+      setModified({});
+      setEditMode(false);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  
 
   return (
     <ReceptionistTemplate
@@ -125,46 +315,40 @@ export default function PlanningMedecin() {
         { label: "Emploi du médecin", current: true },
       ]}
     >
-      <div className="space-y-6">
-        <div className="bg-white rounded-2xl p-4 shadow-sm flex flex-col md:flex-row items-center gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-20 h-20 rounded-full grid place-items-center text-white font-semibold text-xl" style={{ backgroundColor: primaryColor }}>
-              {doctor?.user?.photo_url ? (
-                <img src={getImageUrl(doctor.user.photo_url)} alt={doctor?.user?.full_name} className="w-20 h-20 rounded-full object-cover" style={{ border: "3px solid rgba(255,255,255,0.6)" }} />
-              ) : (
-                <div className="w-20 h-20 rounded-full grid place-items-center">{(doctor?.user?.full_name || "MD").split(" ").map(s => s[0] || "").slice(0,2).join("")}</div>
-              )}
-            </div>
-            <div>
-              <div className="text-lg font-semibold text-slate-900">{doctor?.user?.full_name || "—"}</div>
-              <div className="text-sm text-slate-500">{doctor?.specialite || "Général"}</div>
-            </div>
-          </div>
+      <div className="space-y-6 relative">
+        {/* Floating doctor card */}
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-1/3 max-w-5xl z-20">
+          <div className="bg-white/95 backdrop-blur-sm border border-slate-200 rounded-3xl p-3 shadow-lg">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-4 min-w-0">
+                <div className="w-14 h-14 rounded-full grid place-items-center text-white font-semibold text-lg" style={{ backgroundColor: primaryColor }}>
+                  {doctor?.user?.photo_url ? (
+                    <img src={getImageUrl(doctor.user.photo_url)} alt={doctor?.user?.full_name} className="w-14 h-14 rounded-full object-cover" style={{ border: "2px solid rgba(255,255,255,0.6)" }} />
+                  ) : (
+                    <div className="w-14 h-14 rounded-full grid place-items-center">{(doctor?.user?.full_name || "MD").split(" ").map(s => s[0] || "").slice(0,2).join("")}</div>
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <div className="text-lg font-semibold text-slate-900 truncate">{doctor?.user?.full_name || "—"}</div>
+                  <div className="text-sm text-slate-500 truncate">Durée Consultation : {doctor?.duree_consultation ? `~${doctor.duree_consultation} min` : "—"}</div>
+                </div>
+              </div>
 
-          <div className="ml-auto flex items-center gap-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium text-slate-700">
-              <span className={`w-2 h-2 rounded-full ${st.dot}`} />
-              <span>{st.label}</span>
-            </div>
-
-            <div className="text-sm text-slate-500">{doctor?.numero_salle ? `Salle ${doctor.numero_salle}` : "Salle : —"}</div>
-
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => navigate(`/reception/new-consultation?doctor=${doctor?.id}`)}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-white font-medium shadow"
-                style={{ backgroundColor: primaryColor }}
-              >
-                <Calendar size={16} /> Créer RDV
-              </button>
-
-              <a
-                href={doctor?.phone ? `tel:${doctor.phone}` : undefined}
-                className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm ${doctor?.phone ? "border bg-white text-slate-700" : "bg-slate-50 text-slate-400 cursor-not-allowed"}`}
-                title={doctor?.phone ? `Appeler ${doctor.phone}` : "Numéro non disponible"}
-              >
-                <Phone size={14} />
-              </a>
+              <div className="flex items-center gap-3">
+                {!editMode ? (
+                  <button
+                    onClick={() => setEditMode(true)}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm bg-sky-600 text-white shadow"
+                  >
+                    Modifier les RDV
+                  </button>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <button onClick={handleSave} className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm bg-emerald-600 text-white shadow">Sauvegarder</button>
+                    <button onClick={handleCancelEdits} className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm bg-slate-100">Annuler</button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -187,9 +371,27 @@ export default function PlanningMedecin() {
             consultations={consultations}
             availability={availabilityForCalendar}
             loading={loadingSchedules || loadingConsultations}
-            onChange={() => { toast("Vous ne pouvez pas décaler ce RDV.", { icon: "☹️" }); }}
+            onChange={handleCalendarChange}
+            onEventClick={handleEventClick}
+            editMode={editMode}
           />
         </div>
+        {/* Floating modifications panel on the right (extracted component) */}
+        <ModificationsPanel
+          modified={modified}
+          onCancelModification={handleCancelModification}
+          onRevertModification={handleRevertModification}
+          editing={Boolean(selectedConsultation && editMode)}
+        />
+        {selectedConsultation && editMode && (
+          <EditConsultationFloatingForm
+            consultation={selectedConsultation}
+            onClose={handleCloseEditForm}
+            onSaved={(entry, apiResp) => handleSavedFromForm(entry, apiResp)}
+            autoSave={false}
+            allowDurationEdit={false}
+          />
+        )}
       </div>
     </ReceptionistTemplate>
   );

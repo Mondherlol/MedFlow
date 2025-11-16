@@ -1,5 +1,6 @@
 import React, { useCallback } from "react";
 import { useDroppable, useDraggable } from "@dnd-kit/core";
+import { CalendarCog } from "lucide-react";
 
 /**
  * DayColumn component extracted from WeekCalendar.
@@ -23,6 +24,8 @@ const DayColumn = React.memo(
       isOver,
       overMinutesForDay,
       draggingGhost,
+      onEventClick,
+      editMode,
       toMinutes,
       pxPerMinute,
     },
@@ -121,6 +124,8 @@ const DayColumn = React.memo(
             toMinutes={toMinutes}
             pxPerMinute={pxPerMinute}
             renderEvent={renderEvent}
+            onEventClick={onEventClick}
+            editMode={editMode}
           />
         ))}
       </div>
@@ -134,6 +139,8 @@ const DraggableEvent = React.memo(function DraggableEvent({
   toMinutes,
   pxPerMinute,
   renderEvent,
+  onEventClick,
+  editMode,
 }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: String(event.id),
@@ -148,11 +155,33 @@ const DraggableEvent = React.memo(function DraggableEvent({
       {...attributes}
       {...listeners}
       data-event
+      onContextMenu={(e) => {
+        e.preventDefault();
+        if (isDragging) return;
+        const payload = event.raw && typeof event.raw === "object" ? event.raw : event;
+        onEventClick && onEventClick(payload);
+      }}
       className={`absolute left-1 right-1 rounded-md shadow-sm select-none cursor-move transition-[box-shadow,transform]
         ${isDragging ? "shadow-lg scale-[1.01]" : ""}
         "border bg-white border-slate-200"}`}
       style={{ top, height: Math.max(height, 44) }}
     >
+      {editMode && (
+        <button
+          type="button"
+          onClick={(ev) => {
+            ev.stopPropagation();
+            ev.preventDefault();
+            if (isDragging) return;
+            const payload = event.raw && typeof event.raw === "object" ? event.raw : event;
+            onEventClick && onEventClick(payload);
+          }}
+          className="absolute top-1 right-1 z-20 p-1 rounded bg-white/90 hover:bg-slate-100 text-slate-600"
+          title="Configurer"
+        >
+          <CalendarCog size={14} />
+        </button>
+      )}
       {renderEvent(event)}
     </div>
   );
