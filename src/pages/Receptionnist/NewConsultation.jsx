@@ -5,6 +5,7 @@ import { useClinic } from "../../context/clinicContext";
 import toast from "react-hot-toast";
 import FloatingConsultationForm from "../../components/Reception/FloatingConsultationForm";
 import { formatDateYMD, getMonday } from "../../utils/dateUtils";
+import DoctorCard from "../../components/Reception/DoctorCard";
 
 export default function NewConsultation() {
     const { clinic } = useClinic() || {};
@@ -182,19 +183,12 @@ export default function NewConsultation() {
                                 <div className="text-sm text-slate-500">Aucun médecin trouvé.</div>
                             )}
                             {doctorsFiltered.map((d) => (
-                                <button
+                                <DoctorCard
                                     key={d.id}
-                                    onClick={() => setSelectedDoctor(d)}
-                                    className={`w-full text-left p-3 rounded-lg border ${selectedDoctor?.id === d.id ? "border-blue-400 bg-blue-50" : "border-slate-100"}`}
-                                >
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <div className="font-medium">{d.user?.full_name || "—"}</div>
-                                            <div className="text-xs text-slate-500">{d.specialite || "Général"}</div>
-                                        </div>
-                                        <div className="text-sm text-slate-600">{"~" +d.duree_consultation + "min par RDV" } </div>
-                                    </div>
-                                </button>
+                                    doctor={d}
+                                    selected={selectedDoctor?.id === d.id}
+                                    onSelect={setSelectedDoctor}
+                                />
                             ))}
                         </div>
                     </div>
