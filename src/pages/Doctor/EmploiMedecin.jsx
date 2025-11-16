@@ -41,8 +41,22 @@ export default function EmploiMedecin() {
   const onNextWeek = () => setAnchor((d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + 7));
 
   const handleChange = (updated) => {
-    setEvents(updated);
-    // TODO: sync API (PUT /api/doctor/appointments/:id { dayIndex, start, duration })
+    // WeekCalendar now returns updated consultations; map back to local events shape
+    const mapped = (updated || []).map((c) => {
+      // c may be a consultation-like object; try to compute dayIndex relative to anchor
+      const d = new Date(c.date || anchor);
+      const dayIndex = Math.round((d - startOfWeek(anchor)) / (24 * 60 * 60 * 1000));
+      return {
+        id: c.id,
+        dayIndex: Number.isFinite(dayIndex) ? dayIndex : (c.dayIndex ?? 0),
+        start: c.heure_debut || c.start,
+        duration: c.duration || c.doctor?.duree_consultation || 0,
+        title: c.patient?.user?.full_name || c.title || "—",
+        status: c.statusConsultation || c.status,
+      };
+    });
+    setEvents(mapped);
+    // TODO: sync API (PUT /api/doctor/appointments/:id { date, heure_debut, duration })
   };
 
     // Fetch schedules for the doctor
@@ -104,7 +118,31 @@ export default function EmploiMedecin() {
           onNextWeek={onNextWeek}
           hours={{ start: 8, end: 18 }}
           slotMinutes={15}
-          events={events}
+          consultations={events.map((ev) => {
+            const d = new Date(anchor);
+            d.setDate(d.getDate() + (ev.dayIndex || 0));
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, "0");
+            const dd = String(d.getDate()).padStart(2, "0");
+            const heure_debut = ev.start;
+            // compute heure_fin from start+duration
+            const [sh, sm] = (ev.start || "00:00").split(":").map((n) => parseInt(n, 10));
+            const endDate = new Date(d);
+            endDate.setHours(sh, sm || 0, 0, 0);
+            endDate.setMinutes(endDate.getMinutes() + (ev.duration || 0));
+            const eh = String(endDate.getHours()).padStart(2, "0");
+            const em = String(endDate.getMinutes()).padStart(2, "0");
+            const heure_fin = `${eh}:${em}`;
+            return {
+              id: ev.id,
+              date: `${yyyy}-${mm}-${dd}`,
+              heure_debut,
+              heure_fin,
+              patient: { user: { full_name: ev.title } },
+              doctor: { duree_consultation: ev.duration },
+              statusConsultation: ev.status,
+            };
+          })}
           availability={schedules}
           onChange={handleChange}
           theme={theme}

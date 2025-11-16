@@ -34,7 +34,7 @@ import EditMedia from "./pages/Admin/Clinic/EditMedia";
 import HomeDoctor from "./pages/Doctor/Home";
 import DoctorHoraires from "./pages/Doctor/HorairesMedecin";
 import EmploiMedecin from "./pages/Doctor/EmploiMedecin";
-import TarifsMedecin from "./pages/Doctor/TarifsMedecin";
+import TarifsMedecin from "./pages/Doctor/TarifsMedecin"; 
 
 // Receptionnist pages
 import PatientsListPage from "./pages/Receptionnist/PatientsListPage";

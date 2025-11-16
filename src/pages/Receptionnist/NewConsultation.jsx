@@ -1,46 +1,30 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
 import api from "../../api/axios";
 import WeekCalendar from "../../components/Calendar/WeekCalendar";
 import { useClinic } from "../../context/clinicContext";
-import { useAuth } from "../../context/authContext";
 import toast from "react-hot-toast";
 import FloatingConsultationForm from "../../components/Reception/FloatingConsultationForm";
-
-function getMonday(d) {
-    const date = new Date(d);
-    const day = (date.getDay() + 6) % 7; // make Monday=0
-    date.setDate(date.getDate() - day);
-    date.setHours(0, 0, 0, 0);
-    return date;
-}
-
-function formatDateYMD(d) {
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    return `${y}-${m}-${day}`;
-}
+import { formatDateYMD, getMonday } from "../../utils/dateUtils";
 
 export default function NewConsultation() {
     const { clinic } = useClinic() || {};
-    const { user } = useAuth() || {};
-    const navigate = useNavigate();
-
     const [doctors, setDoctors] = useState([]);
     const [q, setQ] = useState("");
     const [loadingDoctors, setLoadingDoctors] = useState(false);
 
     const [selectedDoctor, setSelectedDoctor] = useState(null);
-    const [schedules, setSchedules] = useState([]);
+    const [horaires, setHoraires] = useState([]);
+    const [consultations, setConsultations] = useState([]);
+
+    const [consultationProvisoire, setConsultationProvisoire] = useState({
+        date: null,
+        start: null,
+        title: "",
+        duree: 15,
+    });
 
     const [weekStart, setWeekStart] = useState(() => getMonday(new Date()));
-
     const [selectedSlot, setSelectedSlot] = useState(null); // { date: 'YYYY-MM-DD', start: 'HH:MM' }
-
-    const [patient, setPatient] = useState("");
-    const [diagnostique, setDiagnostique] = useState("");
-    const [ordonnance, setOrdonnance] = useState("");
 
     // fetch doctors for clinic
     useEffect(() => {
@@ -56,22 +40,46 @@ export default function NewConsultation() {
             .finally(() => setLoadingDoctors(false));
     }, [clinic?.id]);
 
-    // fetch schedules when doctor selected
     useEffect(() => {
-        if (!selectedDoctor) return setSchedules([]);
+        console.log(" Consultation provisoire updated:", consultationProvisoire);
+    }, [consultationProvisoire]);
+
+    // fetch horaires when doctor selected
+    useEffect(() => {
+        if (!selectedDoctor) return setHoraires([]);
+        // Recuperer les horaires du medecin
         api
             .get(`/api/doctors/${selectedDoctor.id}/schedules/`)
-            .then((res) => setSchedules(res.data.data || []))
+            .then((res) => setHoraires(res.data.data || []))
             .catch((err) => {
                 console.error(err);
                 toast.error("Impossible de charger les disponibilités du médecin");
             });
+        // Recuperer les consultations du medecin pour la semaine en cours
+        const startDate = formatDateYMD(weekStart);
+        const endDate = formatDateYMD(new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + 6));
+        fetchConsultationsByDoctorBetweenDates(selectedDoctor.id, startDate, endDate);
     }, [selectedDoctor]);
 
+    const fetchConsultationsByDoctorBetweenDates = async (doctorId, startDate, endDate) => {
+        try {
+            // YYYY-MM-DD pour els dates en query
+            const formatedStart = formatDateYMD(new Date(startDate));
+            const formatedEnd = formatDateYMD(new Date(endDate));
+            const res = await api.get(`/api/consultations/by-doctor/?doctor=${doctorId}&week_start=${formatedStart}&week_end=${formatedEnd}&perPage=100`, {});
+            if (res.data?.data) setConsultations(res.data.data);
+            console.log("Consultations fetched:", res.data);
+        } catch (err) {
+            console.error(err);
+            toast.error("Impossible de charger les consultations du médecin");
+            return [];
+        }
+    };
+
     const availabilityForCalendar = useMemo(() => {
-        // WeekCalendar accepts availability either old or new format. We pass schedules directly.
-        return schedules.map((s) => ({ id: s.id, weekday: s.weekday, slots: s.slots }));
-    }, [schedules]);
+        // WeekCalendar accepts availability either old or new format. We pass horaires directly.
+        return horaires.map((s) => ({ id: s.id, weekday: s.weekday, slots: s.slots }));
+    }, [horaires]);
 
     const doctorsFiltered = useMemo(() => {
         const qq = (q || "").toLowerCase().trim();
@@ -86,18 +94,17 @@ export default function NewConsultation() {
 
     // generate clickable slots for the current week
     const slotsForWeek = useMemo(() => {
-        if (!schedules || !schedules.length) return [];
+        if (!horaires || !horaires.length) return [];
         const slots = [];
         for (let i = 0; i < 7; i++) {
             const day = new Date(weekStart);
             day.setDate(day.getDate() + i);
             const weekday = i; // Monday=0
-            // find schedules matching weekday
-            schedules
+            // find horaires matching weekday
+            horaires
                 .filter((s) => Number(s.weekday) === weekday)
                 .forEach((s) => {
                     (s.slots || []).forEach((sl) => {
-                        // assume sl.start is HH:MM
                         slots.push({ date: formatDateYMD(day), start: sl.start });
                     });
                 });
@@ -105,20 +112,33 @@ export default function NewConsultation() {
         // sort by date/time
         slots.sort((a, b) => (a.date + a.start).localeCompare(b.date + b.start));
         return slots;
-    }, [schedules, weekStart]);
+    }, [horaires, weekStart]);
 
     function prevWeek() {
         const d = new Date(weekStart);
         d.setDate(d.getDate() - 7);
         setWeekStart(getMonday(d));
+
+        // fetch consultations for new week
+        if (selectedDoctor) {
+            const startDate = formatDateYMD(getMonday(d));
+            const endDate = formatDateYMD(new Date(d.getFullYear(), d.getMonth(), d.getDate() + 6));
+            fetchConsultationsByDoctorBetweenDates(selectedDoctor.id, startDate, endDate);
+        }
     }
     function nextWeek() {
         const d = new Date(weekStart);
         d.setDate(d.getDate() + 7);
         setWeekStart(getMonday(d));
+
+        // fetch consultations for new week
+        if (selectedDoctor) {
+            const startDate = formatDateYMD(getMonday(d));
+            const endDate = formatDateYMD(new Date(d.getFullYear(), d.getMonth(), d.getDate() + 6));
+            fetchConsultationsByDoctorBetweenDates(selectedDoctor.id, startDate, endDate);
+        }
     }
 
-    // Creation is handled by the floating form component below
 
     return (
         <div className="min-h-[80dvh] p-6 md:p-10">
@@ -130,9 +150,9 @@ export default function NewConsultation() {
                     </div>
                 </header>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 lg:grid-cols-6 ">
                     {/* Left: search + doctors */}
-                    <div className="bg-white rounded-2xl p-4 shadow-sm">
+                    <div className="lg:col-span-2 bg-white rounded-2xl p-4 shadow-sm">
                         <div className="mb-3">
                             <label className="text-sm font-medium text-slate-700">Rechercher un médecin</label>
                             <input
@@ -160,7 +180,7 @@ export default function NewConsultation() {
                                             <div className="font-medium">{d.user?.full_name || "—"}</div>
                                             <div className="text-xs text-slate-500">{d.specialite || "Général"}</div>
                                         </div>
-                                        <div className="text-sm text-slate-600">{d.numero_salle || "—"}</div>
+                                        <div className="text-sm text-slate-600">{"~" +d.duree_consultation + "min par RDV" } </div>
                                     </div>
                                 </button>
                             ))}
@@ -168,7 +188,7 @@ export default function NewConsultation() {
                     </div>
 
                     {/* Middle: calendar */}
-                    <div className="lg:col-span-2 bg-white rounded-2xl p-4 shadow-sm">
+                    <div className="lg:col-span-4 bg-white rounded-2xl p-4 shadow-sm">
                         <div className="flex items-center justify-between mb-3">
                             <div className="text-sm font-medium">Emploi du médecin</div>
                             <div className="flex items-center gap-2">
@@ -183,9 +203,11 @@ export default function NewConsultation() {
                             onNextWeek={nextWeek}
                             hours={{ start: 8, end: 18 }}
                             slotMinutes={15}
-                            events={[]}
+                            consultations={consultations}
                             availability={availabilityForCalendar}
-                            onChange={() => {}}
+                            onChange={() => { toast("Vous ne pouvez pas décaler ce RDV.", {icon: "☹️"}); }}
+                            consultationProvisoire={consultationProvisoire}
+                            setConsultationProvisoire={setConsultationProvisoire}
                         />
 
                         <div className="mt-4">
@@ -212,7 +234,7 @@ export default function NewConsultation() {
                     </div>
                 </div>
 
-                <FloatingConsultationForm selectedDoctor={selectedDoctor} selectedSlot={selectedSlot} />
+                <FloatingConsultationForm selectedDoctor={selectedDoctor} selectedSlot={selectedSlot} consultationProvisoire={consultationProvisoire} setConsultationProvisoire={setConsultationProvisoire} />
             </div>
         </div>
     );

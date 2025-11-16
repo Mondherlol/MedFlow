@@ -4,7 +4,7 @@ import { useDroppable, useDraggable } from "@dnd-kit/core";
 /**
  * DayColumn component extracted from WeekCalendar.
  * Props:
- * - dayIdx, hours, slotMinutes, slotHeight, availability, events
+ * - dayIdx, hours, slotMinutes, slotHeight, availability, consultations
  * - renderEvent(to render inner event content)
  * - primary, isOver, overMinutesForDay, draggingGhost
  * - toMinutes, pxPerMinute
@@ -17,7 +17,7 @@ const DayColumn = React.memo(
       slotMinutes,
       slotHeight,
       availability,
-      events,
+      consultations,
       renderEvent,
       primary,
       isOver,
@@ -74,9 +74,7 @@ const DayColumn = React.memo(
 
         {/* Disponibilités */}
         {(() => {
-          const slots = Array.isArray(availability)
-            ? availability
-            : availability?.slots || [];
+          const slots = Array.isArray(availability) ? availability : [];
           return slots.map((s, idx) => {
             if (!s || !s.start || !s.end) return null;
             const [sh, sm] = String(s.start).split(":").map(Number);
@@ -116,7 +114,7 @@ const DayColumn = React.memo(
         ) : null}
 
         {/* RDV */}
-        {events.map((ev) => (
+        {(consultations || []).map((ev) => (
           <DraggableEvent
             key={ev.id}
             event={ev}
@@ -150,9 +148,9 @@ const DraggableEvent = React.memo(function DraggableEvent({
       {...attributes}
       {...listeners}
       data-event
-      className={`absolute left-1 right-1 rounded-md border shadow-sm select-none cursor-move transition-[box-shadow,transform]
+      className={`absolute left-1 right-1 rounded-md shadow-sm select-none cursor-move transition-[box-shadow,transform]
         ${isDragging ? "shadow-lg scale-[1.01]" : ""}
-        bg-white border-slate-200`}
+        "border bg-white border-slate-200"}`}
       style={{ top, height: Math.max(height, 44) }}
     >
       {renderEvent(event)}

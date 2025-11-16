@@ -4,6 +4,7 @@ import api from "../../api/axios";
 import toast from "react-hot-toast";
 import { useClinic } from "../../context/clinicContext";
 import { CalendarDays, PlusCircle, X, Loader2 } from "lucide-react";
+import { set } from "react-hook-form";
 
 /* helpers */
 function formatDateYMD(d) {
@@ -22,9 +23,8 @@ function nowTimeRounded() {
 export default function FloatingConsultationForm({
   selectedDoctor,
   selectedSlot,
-  onCreated,
-  onClose, // optional callback to close the floating form (recommended)
-}) {
+  consultationProvisoire,
+  setConsultationProvisoire}) {
   const { clinic } = useClinic() || {};
   const [params] = useSearchParams();
   const navigate = useNavigate();
@@ -63,6 +63,28 @@ export default function FloatingConsultationForm({
   }, [selectedSlot]);
 
 
+  useEffect(() => {
+    setConsultationProvisoire((prev) => ({
+      ...prev,
+      date: date,
+      start: time,
+      title : patient ? `${patient.user.full_name}` : "",
+      duree: selectedDoctor ? selectedDoctor.duree_consultation : prev?.duree,
+    }));
+  }, [time, date, selectedDoctor, patient]);
+
+// Si on a modifié la consultation provisoire depuis l'extérieur, on met à jour les champs locaux
+useEffect(() => {
+  if (!consultationProvisoire) return;
+  if (consultationProvisoire.date && consultationProvisoire.date !== date) {
+    setDate(consultationProvisoire.date);
+  }
+  if (consultationProvisoire.start && consultationProvisoire.start !== time) {
+    setTime(consultationProvisoire.start);
+  }
+}, [consultationProvisoire?.date, consultationProvisoire?.start]);
+
+
   const doctorLabel = selectedDoctor?.user?.full_name || "—";
   const tarif = selectedDoctor?.tarif_consultation || selectedDoctor?.tarif || "—";
   const duree = selectedDoctor?.duree_consultation || selectedDoctor?.duree || "—";
@@ -96,8 +118,7 @@ export default function FloatingConsultationForm({
       setSubmitting(true);
       await api.post(`/api/consultations/`, payload);
       toast.success("Consultation créée");
-      if (onCreated) onCreated();
-      else navigate("/reception/consultations");
+      navigate("/reception/consultations");
     } catch (err) {
       console.error(err);
       const msg = err?.response?.data?.message || "Erreur lors de la création";

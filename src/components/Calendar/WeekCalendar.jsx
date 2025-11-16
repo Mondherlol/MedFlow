@@ -1,5 +1,5 @@
 // src/components/calendar/WeekCalendarDnD.jsx
-import React, { useMemo, useRef, useState, useCallback } from "react";
+import  { useMemo, useRef, useState, useCallback } from "react";
 import { DndContext, useSensor, useSensors, PointerSensor, DragOverlay } from "@dnd-kit/core";
 import { restrictToWindowEdges } from "@dnd-kit/modifiers";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -7,30 +7,18 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import RdvCard from "../Calendar/RdvCard.jsx";
 import DayColumn from "./DayColumn.jsx";
 
-/**
- * Props:
- * - weekStart: Date (lundi)
- * - onPrevWeek(): void
- * - onNextWeek(): void
- * - hours: { start: number, end: number }
- * - slotMinutes: number
- * - events: [{ id, dayIndex, start:"HH:MM", duration, title, status? }]
- * - availability?: either
- *     - old format: [{ id, dayIndex, start, end }]
- *     - new format: [{ id, weekday, slots: [{ start, end }, ...] }]
- * - onChange(updatedEvents)
- * - theme?: { primary, secondary }
- */
 export default function WeekCalendarDnD({
   weekStart,
   onPrevWeek,
   onNextWeek,
   hours = { start: 8, end: 18 },
   slotMinutes = 15,
-  events = [],
+  consultations = [],
   availability = [],
   onChange,
   theme = {},
+  consultationProvisoire,
+  setConsultationProvisoire,
 }) {
   const primary = theme?.primary || "#0ea5e9";
   const secondary = theme?.secondary || "#0f172a";
@@ -75,32 +63,18 @@ export default function WeekCalendarDnD({
     return arr;
   }, [weekStart]);
 
-  // Normalize availability into an array per day: [[{id,start,end}, ...], ...]
+  // Normalize availability into an array per day (new format only):
+  // expect [{ id, weekday, slots: [{start,end}, ...] }, ...]
   const availabilityByDay = useMemo(() => {
     const byDay = Array.from({ length: 7 }, () => []);
     (availability || []).forEach((a) => {
-      if (!a) return;
-      // New format: has slots array and a weekday field
-      if (Array.isArray(a.slots)) {
-        const w = Number(a.weekday ?? a.dayIndex);
-        if (Number.isFinite(w) && w >= 0 && w < 7) {
-          a.slots.forEach((s, idx) => {
-            if (!s) return;
-            byDay[w].push({ id: `${a.id ?? `av-${w}`}-${idx}`, start: s.start, end: s.end });
-          });
-        }
-      } else if (a.dayIndex != null) {
-        // Old format single slot
-        const di = Number(a.dayIndex);
-        if (Number.isFinite(di) && di >= 0 && di < 7) {
-          byDay[di].push({ id: a.id ?? `${di}-${a.start}`, start: a.start, end: a.end });
-        }
-      } else if (a.weekday != null && a.start && a.end) {
-        const w = Number(a.weekday);
-        if (Number.isFinite(w) && w >= 0 && w < 7) {
-          byDay[w].push({ id: a.id ?? `${w}-${a.start}`, start: a.start, end: a.end });
-        }
-      }
+      if (!a || !Array.isArray(a.slots)) return;
+      const w = Number(a.weekday);
+      if (!Number.isFinite(w) || w < 0 || w >= 7) return;
+      a.slots.forEach((s, idx) => {
+        if (!s || !s.start || !s.end) return;
+        byDay[w].push({ id: `${a.id ?? `av-${w}`}-${idx}`, start: s.start, end: s.end });
+      });
     });
     return byDay;
   }, [availability]);
@@ -121,11 +95,6 @@ export default function WeekCalendarDnD({
   const prevOverDayIndexRef = useRef(null);
   const prevOverMinutesRef = useRef(null);
   const prevGhostStartRef = useRef(null);
-
-  const findEvent = useCallback(
-    (id) => events.find((e) => e.id === id),
-    [events]
-  );
 
   // Y relatif du draggable dans une colonne
   const getRelativeY = (e, colEl) => {
@@ -149,13 +118,13 @@ export default function WeekCalendarDnD({
     const id = e.active?.id;
     if (!id) return;
     setDraggingId(id);
-    const ev = findEvent(id);
+    const ev = normalizedConsultations.find((x) => String(x.id) === String(id));
     if (ev) setGhost(ev);
   };
 
   const handleDragMove = (e) => {
     if (!draggingId) return;
-    const base = findEvent(draggingId);
+    const base = normalizedConsultations.find((x) => String(x.id) === String(draggingId));
     if (!base) return;
 
     const overIdx = e.over?.data?.current?.dayIndex;
@@ -181,35 +150,61 @@ export default function WeekCalendarDnD({
     }
   };
 
-  const handleDragEnd = (e) => {
-    if (!draggingId) {
-      resetDragUi();
-      return;
-    }
-    const base = findEvent(draggingId);
-    if (!base) {
-      resetDragUi();
-      return;
-    }
-
-    const overIdx = e.over?.data?.current?.dayIndex;
-    if (overIdx == null) {
-      resetDragUi();
-      return;
-    }
-
-    const pos = eventPositionFromDrag(e, overIdx);
-    const startMin = clamp(pos.minutes, 0, totalMinutes - base.duration);
-    const updated = events.map((ev) =>
-      ev.id === base.id
-        ? { ...ev, dayIndex: pos.dayIndex, start: fromMinutes(startMin) }
-        : ev
-    );
-
-    onChange?.(updated);
+// --- handleDragEnd: detect provisional and update parent state instead of onChange ---
+const handleDragEnd = (e) => {
+  if (!draggingId) {
     resetDragUi();
-  };
+    return;
+  }
+  const base = normalizedConsultations.find((x) => String(x.id) === String(draggingId));
+  if (!base) {
+    resetDragUi();
+    return;
+  }
 
+  const overIdx = e.over?.data?.current?.dayIndex;
+  if (overIdx == null) {
+    resetDragUi();
+    return;
+  }
+
+  const pos = eventPositionFromDrag(e, overIdx);
+  const startMin = clamp(pos.minutes, 0, totalMinutes - base.duration);
+
+  // If it was the provisional item, update parent consultationProvisoire
+  if (String(base.id) === "provisional" || base.raw?.provisional) {
+    const newDate = new Date(weekStart);
+    newDate.setDate(newDate.getDate() + pos.dayIndex);
+    const yyyy = newDate.getFullYear();
+    const mm = String(newDate.getMonth() + 1).padStart(2, "0");
+    const dd = String(newDate.getDate()).padStart(2, "0");
+    const newStart = fromMinutes(startMin);
+
+    // tell parent about new provisional date/time
+    setConsultationProvisoire((prev) => ({
+      ...(prev || {}),
+      date: `${yyyy}-${mm}-${dd}`,
+      start: newStart,
+    }));
+
+    resetDragUi();
+    return;
+  }
+
+  // existing behavior for real consultations: update array and call onChange
+  const updated = consultations.map((c) => {
+    if (String(c.id) !== String(base.id)) return c;
+    const newDate = new Date(weekStart);
+    newDate.setDate(newDate.getDate() + pos.dayIndex);
+    const yyyy = newDate.getFullYear();
+    const mm = String(newDate.getMonth() + 1).padStart(2, "0");
+    const dd = String(newDate.getDate()).padStart(2, "0");
+    return { ...c, date: `${yyyy}-${mm}-${dd}`, heure_debut: fromMinutes(startMin) };
+  });
+
+  onChange?.(updated);
+  resetDragUi();
+};
   const handleDragCancel = () => {
     resetDragUi();
   };
@@ -224,26 +219,92 @@ export default function WeekCalendarDnD({
     prevGhostStartRef.current = null;
   };
 
-
   const renderEvent = useCallback(
-    (ev) => {
-      const start = ev.start;
-      const end = fromMinutes(toMinutes(ev.start) + ev.duration);
-      const cancelled = ev.status === "cancelled";
+    (c) => {
+      const start = c.start;
+      const end = fromMinutes(toMinutes(c.start) + c.duration);
+      const cancelled = (c.statusConsultation) === "annule";
+      const provisoire = c.id == "provisional";
       return (
         <RdvCard
-          title={ev.title}
+          title={c.title}
           start={start}
           end={end}
           cancelled={cancelled}
+          provisoire={provisoire}
         />
       );
     },
     [fromMinutes, toMinutes]
   );
 
-  // DayColumn and DraggableEvent extracted to ./DayColumn.jsx
+  // Normalize consultations into internal shape expected by DayColumn
+const normalizedConsultations = useMemo(() => {
+  const base = (consultations || [])
+    .map((c) => {
+      if (!c) return null;
+      const d = new Date(c.date);
+      const dayIndex = days.findIndex(
+        (dd) =>
+          dd.getFullYear() === d.getFullYear() &&
+          dd.getMonth() === d.getMonth() &&
+          dd.getDate() === d.getDate()
+      );
+      if (dayIndex === -1) return null;
 
+      const start = c.heure_debut || c.start || "00:00";
+      let duration = 0;
+      if (c.heure_fin) {
+        const [sh, sm] = (c.heure_debut || "00:00").split(":").map((n) => parseInt(n, 10));
+        const [eh, em] = (c.heure_fin || "00:00").split(":").map((n) => parseInt(n, 10));
+        duration = (eh - sh) * 60 + (em - (sm || 0));
+      } else if (c.doctor && Number.isFinite(c.doctor.duree_consultation)) {
+        duration = Number(c.doctor.duree_consultation);
+      } else {
+        duration = Number(c.duration || 0);
+      }
+
+      const title = c.patient?.user?.full_name || c.patient?.full_name || c.patient?.user?.email || "Consultation";
+
+      return {
+        id: c.id,
+        dayIndex,
+        start,
+        duration: Math.max(0, Math.round(duration)),
+        title,
+        statusConsultation: c.statusConsultation,
+        raw: c,
+      };
+    })
+    .filter(Boolean);
+
+  // --- add provisional consultation if present ---
+  if (consultationProvisoire?.date && consultationProvisoire?.start) {
+    const d = new Date(consultationProvisoire.date);
+    const dayIndex = days.findIndex(
+      (dd) =>
+        dd.getFullYear() === d.getFullYear() &&
+        dd.getMonth() === d.getMonth() &&
+        dd.getDate() === d.getDate()
+    );
+    if (dayIndex !== -1) {
+      base.push({
+        id: "provisional", // unique id for provisional item
+        dayIndex,
+        start: consultationProvisoire.start,
+        duration: Number(consultationProvisoire.duree || consultationProvisoire.duration || 15),
+        title: consultationProvisoire.title || "PROV",
+        provisional: true,
+        raw: { provisional: true },
+      });
+    }
+  }
+
+  return base;
+}, [consultations, days, consultationProvisoire]);
+
+
+  // DayColumn and DraggableEvent extracted to ./DayColumn.jsx
   return (
     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
       {/* Header */}
@@ -319,7 +380,7 @@ export default function WeekCalendarDnD({
               slotMinutes={slotMinutes}
               slotHeight={SLOT_HEIGHT}
               availability={availabilityByDay[dayIdx] || []}
-              events={events.filter((e) => e.dayIndex === dayIdx)}
+              consultations={normalizedConsultations.filter((e) => e.dayIndex === dayIdx)}
               renderEvent={renderEvent}
               toMinutes={toMinutes}
               pxPerMinute={pxPerMinute}
@@ -334,17 +395,28 @@ export default function WeekCalendarDnD({
         {/* CARD du RDV mais quand on drag */}
         <DragOverlay dropAnimation={null}>
           {ghost ? (
-            <div
-              className="rounded-md cursor-grabbing border shadow-sm bg-white text-slate-800"
-              style={{ width: 150, borderColor: "#e2e8f0" }}
-            >
-              <div className="px-2 py-1 text-[12px] font-medium">
-                {ghost.title || "RDV"}
-              </div>
-              <div className="px-2 pb-2 text-[11px] text-slate-500">
-                {ghost.start} — {fromMinutes(toMinutes(ghost.start) + ghost.duration)}
-              </div>
-            </div>
+            (() => {
+              const isProvisionalGhost = ghost && (ghost.id === "provisional" || ghost.raw?.provisional);
+              const wrapperClass = isProvisionalGhost
+                ? "rounded-md cursor-grabbing border border-dashed border-blue-200 shadow-sm bg-blue-50/60 text-blue-800"
+                : "rounded-md cursor-grabbing border shadow-sm bg-white text-slate-800";
+              const titleClass = isProvisionalGhost
+                ? "px-2 py-1 text-[12px] font-medium text-blue-800"
+                : "px-2 py-1 text-[12px] font-medium";
+              const footerClass = isProvisionalGhost
+                ? "px-2 pb-2 text-[11px] text-blue-700"
+                : "px-2 pb-2 text-[11px] text-slate-500";
+              const style = isProvisionalGhost ? { width: 120 } : { width: 120, borderColor: "#e2e8f0" };            
+
+              return (
+                <div className={wrapperClass} style={style}>
+                  <div className={titleClass}>{ghost.title || "RDV"}</div>
+                  <div className={footerClass}>
+                    {ghost.start} — {fromMinutes(toMinutes(ghost.start) + ghost.duration)}
+                  </div>
+                </div>
+              );
+            })()
           ) : null}
         </DragOverlay>
       </DndContext>
