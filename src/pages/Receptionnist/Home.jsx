@@ -14,7 +14,8 @@ import SearchBar from "../../components/Reception/SearchBar";
 import { useClinic } from "../../context/clinicContext";
 import { useAuth } from "../../context/authContext";
 import ActionTile from "../../components/Reception/ActionTile";
-import ConsultationRow from "../../components/Reception/ConsultationRow";
+import NowPanel from "../../components/Reception/NowPanel";
+import UpcomingPanel from "../../components/Reception/UpcomingPanel";
 import toast from "react-hot-toast";
 import api from "../../api/axios";
 import HistoriqueSection from "../../components/Reception/HistoriqueSection";
@@ -257,56 +258,25 @@ export default function ReceptionnistHome() {
           </div>
         </section>
 
-        {/* two columns: now / upcoming */}
+        {/* two columns: now / upcoming (split into components) */}
         <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* NOW */}
-          <div className="bg-white rounded-2xl p-4 shadow-sm hover:shadow-lg transition-border duration-150 border border-slate-50">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-semibold">Check-ins — Maintenant</h2>
-              <Link to="/reception/checkins" className="text-xs font-medium text-slate-600">Voir tout</Link>
-            </div>
+          <NowPanel
+            consultations={nowConsultations}
+            onCheckIn={handleCheckIn}
+            onCheckOut={handleCheckOut}
+            onPostpone={handlePostpone}
+            onCancel={handleCancel}
+            accent={primaryColor}
+            loadingAction={loadingAction}
+          />
 
-            {nowConsultations.length ? (
-              <div className="space-y-2">
-                {nowConsultations.map(c => (
-                  <ConsultationRow
-                    key={c.id}
-                    c={c}
-                    onCheckIn={() => handleCheckIn(c.id)}
-                    onCheckOut={() => handleCheckOut(c.id)}
-                    onPostpone={() => handlePostpone(c.id)}
-                    onCancel={() => handleCancel(c.id)}
-                    accent={primaryColor}
-                    loadingAction={loadingAction}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="text-sm text-slate-500">Aucun rendez-vous dans l'intervalle de ± 1 heure.</div>
-            )}
-          </div>
-
-          {/* UPCOMING */}
-          <div className="bg-white rounded-2xl p-4 shadow-sm hover:shadow-lg transition-border duration-150 border border-slate-50">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-semibold">Prochains rendez-vous de la journée</h2>
-              <Link to="/reception/consultations" className="text-xs font-medium text-slate-600">Voir la journée</Link>
-            </div>
-
-            <div className="space-y-2">
-              {upcoming.slice(0, 8).map(c => (
-                <ConsultationRow
-                  key={c.id}
-                  c={c}
-                  onPostpone={() => handlePostpone(c.id)}
-                  onCancel={() => handleCancel(c.id)}
-                  accent={primaryColor}
-                  loadingAction={loadingAction}
-                />
-              ))}
-              {!upcoming.length && <div className="text-sm text-slate-500">Aucun rendez-vous à venir.</div>}
-            </div>
-          </div>
+          <UpcomingPanel
+            consultations={upcoming}
+            onPostpone={handlePostpone}
+            onCancel={handleCancel}
+            accent={primaryColor}
+            loadingAction={loadingAction}
+          />
         </section>
 
         {/* HISTORIQUE DE LA JOURNEE */}

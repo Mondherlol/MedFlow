@@ -20,9 +20,9 @@ export default function ConsultationRow({ c, onCheckIn, onCheckOut, onPostpone, 
       <div className="flex items-center gap-3 min-w-0">
         <div className={`w-1 h-12 rounded-l-lg ${barColor}`} />
         <div className="flex items-center gap-3 pl-3 min-w-0">
-          <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center font-semibold text-slate-700">
+          <Link to={`/reception/patients/${c.patient.id}`} className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center font-semibold text-slate-700">
             {initials}
-          </div>
+          </Link>
           <div className="min-w-0">
             <Link to={`/reception/patients/${c.patient.id}`} className="text-sm font-medium truncate">{c.patient.full_name}</Link>
             <div className="text-xs text-slate-500 truncate">
