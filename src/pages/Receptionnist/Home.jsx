@@ -18,6 +18,7 @@ import ConsultationRow from "../../components/Reception/ConsultationRow";
 import toast from "react-hot-toast";
 import api from "../../api/axios";
 import HistoriqueSection from "../../components/Reception/HistoriqueSection";
+import EditConsultationFloatingForm from "../../components/Reception/EditConsultationFloatingForm";
 
 
 export default function ReceptionnistHome() {
@@ -34,6 +35,7 @@ export default function ReceptionnistHome() {
   const [upcoming, setUpcoming] = useState([]);
   const [nowConsultations, setNowConsultations] = useState([]);
   const [pastToday, setPastToday] = useState([]);
+  const [editingConsultation, setEditingConsultation] = useState(null);
 
   // stats / notifications 
   const stats = {
@@ -171,19 +173,9 @@ export default function ReceptionnistHome() {
   };
 
   const handlePostpone = (id) => {
-    // prompt simple : minutes to postpone
-    const minutesStr = window.prompt("Reporter de combien de minutes ?", "15");
-    if (!minutesStr) return;
-    const minutes = parseInt(minutesStr, 10);
-    if (isNaN(minutes) || minutes <= 0) return toast.error("Valeur invalide");
-    setConsultations(prev => prev.map(c => {
-      if (c.id !== id) return c;
-      // compute new time conservatively using heure_debut if available
-      const base = c.time ? new Date(c.time) : new Date(`${c.date}T${c.heure_debut || '00:00'}`);
-      const newTime = new Date(base.getTime() + minutes * 60000);
-      toast.success(`Rendez-vous reporté de ${minutes} min → ${newTime.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`);
-      return { ...c, time: newTime.toISOString(), statusConsultation: "confirme", status: "scheduled" };
-    }));
+    const c = consultations.find(x => x.id === id);
+    if (!c) return toast.error("Rendez-vous introuvable");
+    setEditingConsultation(c);
   };
 
   return (
@@ -307,7 +299,37 @@ export default function ReceptionnistHome() {
         </section>
 
         {/* HISTORIQUE DE LA JOURNEE */}
-        <HistoriqueSection pastToday={pastToday} />
+        <HistoriqueSection pastToday={pastToday} onCancel={(id) => handleCancel(id)} onPostpone={(id) => handlePostpone(id)} />
+
+        {/* Edit modal for postponing/editing consultations */}
+        {editingConsultation && (
+          <EditConsultationFloatingForm
+            consultation={editingConsultation}
+            onClose={() => setEditingConsultation(null)}
+            onSaved={(result, serverData) => {
+              try {
+                const original = result?.original;
+                const modified = result?.modified || {};
+                const saved = serverData || modified;
+                const id = saved?.id || original?.id;
+                const todayYMD = new Date().toISOString().slice(0,10);
+                if (!id) return;
+                if (saved?.date === todayYMD) {
+                  // update in-place
+                  updateConsultation(id, saved);
+                } else {
+                  // removed from today's list
+                  setConsultations(prev => prev.filter(c => c.id !== id));
+                }
+                setEditingConsultation(null);
+                toast.success("Consultation mise à jour");
+              } catch (err) {
+                console.error(err);
+                toast.error("Erreur lors de la mise à jour");
+              }
+            }}
+          />
+        )}
       </div>
     </div>
   );

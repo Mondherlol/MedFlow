@@ -12,7 +12,7 @@ export default function ConsultationRow({ c, onCheckIn, onCheckOut, onPostpone, 
     : c.status === "cancelled" ? "bg-rose-400"
     : "bg-sky-400";
 
-  const initials = (c.patient?.name || "").split(" ").map(p => p[0]).slice(0,2).join("").toUpperCase();
+  const initials = (c.patient?.full_name || "").split(" ").map(p => p[0]).slice(0,2).join("").toUpperCase();
 
   return (
     <div className="flex items-center justify-between gap-3 p-3 rounded-lg bg-white border border-slate-50 hover:shadow-md hover:-translate-y-0.5 transform transition-all duration-150" role="row">
