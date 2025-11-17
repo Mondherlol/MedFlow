@@ -7,10 +7,10 @@ export default function ConsultationRow({ c, onCheckIn, onCheckOut, onPostpone, 
   const isLoadingCheckOut = loadingAction === `checkout-${c?.id}`;
   const isLoadingCancel = loadingAction === `cancel-${c?.id}`;
   // small color bar per status
-  const barColor = c.status === "checked_in" ? "bg-emerald-400"
-    : c.status === "checked_out" ? "bg-slate-300"
-    : c.status === "cancelled" ? "bg-rose-400"
-    : "bg-sky-400";
+  const barColor = c.statusConsultation === "confirme" ? "bg-orange-400"
+    : c.statusConsultation === "encours" ? "bg-sky-400"
+    : c.statusConsultation === "annule" ? "bg-rose-400"
+    : "bg-slate-400";
 
   const initials = (c.patient?.full_name || "").split(" ").map(p => p[0]).slice(0,2).join("").toUpperCase();
 

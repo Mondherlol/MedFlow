@@ -29,10 +29,18 @@ export default function ConsultationCard({ consultation: c, onCancel, onPostpone
     StatusIcon = Clock;
   }
 
+    // small color bar per status
+  const barColor = c.statusConsultation === "confirme" ? "bg-orange-400"
+    : c.statusConsultation === "encours" ? "bg-green-400"
+    : c.statusConsultation === "annule" ? "bg-rose-400"
+    : "bg-green-400";
+
   const initials = (patientName || "—").split(" ").map(s => s[0] || "").slice(0,2).join("").toUpperCase();
 
   return (
     <article className="flex items-center gap-3 p-3 rounded-2xl bg-white shadow-sm hover:shadow-md border border-slate-100 transition">
+     <div className={`w-1 h-12 rounded-l-lg ${barColor}`} />
+
       {/* avatar + status (left) */}
       <div className="flex items-center gap-3">
         <Link to={`/reception/patients/${c.patient?.id || ""}`} className="shrink-0">
