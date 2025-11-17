@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { CheckCircle, ClockIcon, XCircle, Search, ChevronLeft, ChevronRight, ArrowUpDown, Users, UserCheck, UserRound } from "lucide-react";
+import { CheckCircle, ClockIcon, XCircle, Search, ChevronLeft, ChevronRight, ArrowUpDown, Users, UserCheck, UserRound, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const getStatusText = (status) => {
@@ -18,7 +18,7 @@ const getStatusText = (status) => {
     }
 }
 
-function HistoriqueSection({ pastToday = [], onCancel, onPostpone }) {
+function HistoriqueSection({ pastToday = [], onCancel, onPostpone, loadingAction = "" }) {
   // UI state: filters, sorting, pagination, search
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -211,12 +211,12 @@ function HistoriqueSection({ pastToday = [], onCancel, onPostpone }) {
                   <div className="flex items-center gap-2">
                     {status === "confirme" && (
                       <>
-                        <button onClick={() => handlePostpone(c)} className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md bg-amber-50 text-amber-800 hover:bg-amber-100 shadow-sm border border-transparent">
+                        <button onClick={() => handlePostpone(c)} disabled={loadingAction === `cancel-${c.id}`} className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md bg-amber-50 text-amber-800 hover:bg-amber-100 shadow-sm border border-transparent">
                           <ClockIcon className="w-4 h-4" />
                           Reporter
                         </button>
-                        <button onClick={() => handleCancel(c)} className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md bg-rose-50 text-rose-700 hover:bg-rose-100 shadow-sm border border-transparent">
-                          <XCircle className="w-4 h-4" />
+                        <button onClick={() => handleCancel(c)} disabled={loadingAction === `cancel-${c.id}`} className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md bg-rose-50 text-rose-700 hover:bg-rose-100 shadow-sm border border-transparent">
+                          {loadingAction === `cancel-${c.id}` ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
                           Annuler
                         </button>
                       </>

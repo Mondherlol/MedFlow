@@ -36,6 +36,7 @@ export default function ReceptionnistHome() {
   const [nowConsultations, setNowConsultations] = useState([]);
   const [pastToday, setPastToday] = useState([]);
   const [editingConsultation, setEditingConsultation] = useState(null);
+  const [loadingAction, setLoadingAction] = useState("");
 
   // stats / notifications 
   const stats = {
@@ -47,7 +48,7 @@ export default function ReceptionnistHome() {
   async function fetchConsultations() {
     try {
       setLoadingConsultations(true);
-      const res = await api.get(`/api/consultations/?clinic_id=${clinic.id}&date=${new Date().toISOString().slice(0,10)}`);
+      const res = await api.get(`/api/consultations/?clinic_id=${clinic.id}&date=${new Date().toISOString().slice(0,10)}&perPage=1000`);
       const data = res.data?.data || res.data || null;
       console.log("Consultations chargées :", data);
 
@@ -77,7 +78,7 @@ export default function ReceptionnistHome() {
         const heureDebut = c.heure_debut;
         const consultTime = new Date(`${c.date}T${heureDebut}`);
         const diffMinutes = (consultTime - now) / 60000;
-        return (diffMinutes >= -30 && diffMinutes <= 60) && (c.statusConsultation == "confirme" || c.statusConsultation == "encours");
+        return ((diffMinutes >= -30 && diffMinutes <= 60) && c.statusConsultation == "confirme" ) || c.statusConsultation == "encours";
       });
       setNowConsultations(filtered);    
 
@@ -119,56 +120,64 @@ export default function ReceptionnistHome() {
 
 
   const handleCheckIn = async (id) => {
-    // Optimistic update: set local state immediately, revert if API fails
-    const prev = consultations.find(c => c.id === id) || {};
-    const prevStatusConsult = prev.statusConsultation;
-    const prevStatus = prev.status;
-    updateConsultation(id, { statusConsultation: "encours", status: "checked_in" });
+    // Disable button and show loader until server responds
+    setLoadingAction(`checkin-${id}`);
     try {
-      await api.patch(`/api/consultations/${id}/check-in/`);
+      const res = await api.patch(`/api/consultations/${id}/check-in/`);
+      const data = res?.data?.data || res?.data || null;
+      if (data) {
+        updateConsultation(id, data);
+      } else {
+        // fallback: update common fields if server doesn't return full object
+        updateConsultation(id, { statusConsultation: "encours", status: "checked_in" });
+      }
       toast.success("Check-in effectué");
     } catch (error) {
       console.error(error);
-      // revert
-      updateConsultation(id, { statusConsultation: prevStatusConsult, status: prevStatus });
       toast.error("Erreur lors du check-in");
+    } finally {
+      setLoadingAction("");
     }
   
   };
 
   const handleCheckOut = async (id) => {
-    // Optimistic update: mark as finished locally immediately
-    const prev = consultations.find(c => c.id === id) || {};
-    const prevStatusConsult = prev.statusConsultation;
-    const prevStatus = prev.status;
-    updateConsultation(id, { statusConsultation: "termine", status: "checked_out" });
+    setLoadingAction(`checkout-${id}`);
     try {
-      await api.patch(`/api/consultations/${id}/check-out/`);
+      const res = await api.patch(`/api/consultations/${id}/check-out/`);
+      const data = res?.data?.data || res?.data || null;
+      if (data) {
+        updateConsultation(id, data);
+      } else {
+        updateConsultation(id, { statusConsultation: "termine", status: "checked_out" });
+      }
       toast.success("Check-out effectué");
     } catch (error) {
       console.error(error);
-      // revert
-      updateConsultation(id, { statusConsultation: prevStatusConsult, status: prevStatus });
       toast.error("Erreur lors du check-out");
+    } finally {
+      setLoadingAction("");
     }
   };
 
   const handleCancel = async (id) => {
-    const ok = window.confirm("Annuler le rendez-vous ? Cette action peut être annulée manuellement.");
+    const ok = window.confirm("Annuler le rendez-vous ?");
     if (!ok) return;
-    const prev = consultations.find(c => c.id === id) || {};
-    const prevStatusConsult = prev.statusConsultation;
-    const prevStatus = prev.status;
-    // optimistic
-    updateConsultation(id, { statusConsultation: "annuler", status: "cancelled" });
-    toast("Rendez-vous annulé", { icon: "⚠️" });
+    setLoadingAction(`cancel-${id}`);
     try {
-      await api.patch(`/api/consultations/${id}/cancel/`);
+      const res = await api.patch(`/api/consultations/${id}/cancel/`);
+      const data = res?.data?.data || res?.data || null;
+      if (data) {
+        updateConsultation(id, data);
+      } else {
+        updateConsultation(id, { statusConsultation: "annuler", status: "cancelled" });
+      }
+      toast.success("Rendez-vous annulé");
     } catch (err) {
       console.error(err);
-      // revert on failure
-      updateConsultation(id, { statusConsultation: prevStatusConsult, status: prevStatus });
       toast.error("Erreur lors de l'annulation");
+    } finally {
+      setLoadingAction("");
     }
   };
 
@@ -268,6 +277,7 @@ export default function ReceptionnistHome() {
                     onPostpone={() => handlePostpone(c.id)}
                     onCancel={() => handleCancel(c.id)}
                     accent={primaryColor}
+                    loadingAction={loadingAction}
                   />
                 ))}
               </div>
@@ -291,6 +301,7 @@ export default function ReceptionnistHome() {
                   onPostpone={() => handlePostpone(c.id)}
                   onCancel={() => handleCancel(c.id)}
                   accent={primaryColor}
+                  loadingAction={loadingAction}
                 />
               ))}
               {!upcoming.length && <div className="text-sm text-slate-500">Aucun rendez-vous à venir.</div>}
@@ -299,7 +310,7 @@ export default function ReceptionnistHome() {
         </section>
 
         {/* HISTORIQUE DE LA JOURNEE */}
-        <HistoriqueSection pastToday={pastToday} onCancel={(id) => handleCancel(id)} onPostpone={(id) => handlePostpone(id)} />
+        <HistoriqueSection pastToday={pastToday} onCancel={(id) => handleCancel(id)} onPostpone={(id) => handlePostpone(id)} loadingAction={loadingAction} />
 
         {/* Edit modal for postponing/editing consultations */}
         {editingConsultation && (

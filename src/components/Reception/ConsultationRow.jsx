@@ -1,11 +1,11 @@
-import { useState } from "react";
 import { Phone, Check, Repeat, X, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 
 
-export default function ConsultationRow({ c, onCheckIn, onCheckOut, onPostpone, onCancel, accent = "#0ea5e9" }) {
-  const [loadingCheckIn, setLoadingCheckIn] = useState(false);
-  const [loadingCheckOut, setLoadingCheckOut] = useState(false);
+export default function ConsultationRow({ c, onCheckIn, onCheckOut, onPostpone, onCancel, loadingAction = "", accent = "#0ea5e9" }) {
+  const isLoadingCheckIn = loadingAction === `checkin-${c?.id}`;
+  const isLoadingCheckOut = loadingAction === `checkout-${c?.id}`;
+  const isLoadingCancel = loadingAction === `cancel-${c?.id}`;
   // small color bar per status
   const barColor = c.status === "checked_in" ? "bg-emerald-400"
     : c.status === "checked_out" ? "bg-slate-300"
@@ -41,28 +41,20 @@ export default function ConsultationRow({ c, onCheckIn, onCheckOut, onPostpone, 
 
         {c.statusConsultation !== "encours" && c.statusConsultation !== "termine"  && (<>
           <button
-            onClick={async () => {
-              if (!onCheckIn) return;
-              try {
-                setLoadingCheckIn(true);
-                await onCheckIn();
-              } finally {
-                setLoadingCheckIn(false);
-              }
-            }}
-            disabled={loadingCheckIn}
-            className={`px-3 py-1 flex flex-row justify-center items-center rounded-md text-white text-sm font-medium transition ${loadingCheckIn ? 'opacity-60 cursor-not-allowed' : 'hover:brightness-95 cursor-pointer'}`}
+            onClick={() => { if (onCheckIn) onCheckIn(); }}
+            disabled={isLoadingCheckIn}
+            className={`px-3 py-1 flex flex-row justify-center items-center rounded-md text-white text-sm font-medium transition ${isLoadingCheckIn ? 'opacity-60 cursor-not-allowed' : 'hover:brightness-95 cursor-pointer'}`}
             style={{ background: accent }}
           >
-            {loadingCheckIn ? <Loader2 className="inline-block w-4 h-4 animate-spin" /> : <><Check className="inline-block w-4 h-4 mr-1" /> Check-in</>}
+            {isLoadingCheckIn ? <Loader2 className="inline-block w-4 h-4 animate-spin" /> : <><Check className="inline-block w-4 h-4 mr-1" /> Check-in</>}
           </button>
 
             {/* Boutons */}
           <button onClick={onPostpone} title="Reporter" className="p-2 rounded-md bg-white border border-slate-100 hover:shadow-sm transition cursor-pointer">
             <Repeat className="w-4 h-4 text-slate-600" />
           </button>
-          <button onClick={onCancel} title="Annuler" className="p-2 rounded-md bg-white border border-slate-100 hover:bg-rose-50 hover:shadow-sm transition cursor-pointer">
-            <X className="w-4 h-4 text-rose-600" />
+          <button onClick={() => { if (onCancel) onCancel(); }} title="Annuler" disabled={isLoadingCancel} className={`p-2 rounded-md bg-white border border-slate-100 hover:bg-rose-50 hover:shadow-sm transition ${isLoadingCancel ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}>
+            {isLoadingCancel ? <Loader2 className="w-4 h-4 animate-spin text-rose-600" /> : <X className="w-4 h-4 text-rose-600" />}
           </button>
         </>
         )}
@@ -70,20 +62,12 @@ export default function ConsultationRow({ c, onCheckIn, onCheckOut, onPostpone, 
         {c.statusConsultation === "encours" && (
           <>
             <button
-              onClick={async () => {
-                if (!onCheckOut) return;
-                try {
-                  setLoadingCheckOut(true);
-                  await onCheckOut();
-                } finally {
-                  setLoadingCheckOut(false);
-                }
-              }}
-              disabled={loadingCheckOut}
+              onClick={() => { if (onCheckOut) onCheckOut(); }}
+              disabled={isLoadingCheckOut}
               title="Check-out"
-              className={`px-3 py-1 flex flex-row justify-center items-center rounded-md text-white text-sm font-medium bg-emerald-500 transition ${loadingCheckOut ? 'opacity-60 cursor-not-allowed' : 'hover:brightness-95 cursor-pointer'}`}
+              className={`px-3 py-1 flex flex-row justify-center items-center rounded-md text-white text-sm font-medium bg-emerald-500 transition ${isLoadingCheckOut ? 'opacity-60 cursor-not-allowed' : 'hover:brightness-95 cursor-pointer'}`}
             >
-              {loadingCheckOut ? <Loader2 className="inline-block w-4 h-4 animate-spin" /> : <><Check className="inline-block w-4 h-4 mr-1" /> Check-out</>}
+              {isLoadingCheckOut ? <Loader2 className="inline-block w-4 h-4 animate-spin" /> : <><Check className="inline-block w-4 h-4 mr-1" /> Check-out</>}
             </button>
             <span className="px-3 py-1 rounded-md text-white text-sm font-medium bg-sky-200">En cours</span>
 

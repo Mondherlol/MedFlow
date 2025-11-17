@@ -121,7 +121,7 @@ function PatientCard({ p }) {
 
           <button
             type="button"
-            className="p-2 rounded-md bg-white border hover:bg-slate-50 transition"
+            className=" cursor-pointer p-2 rounded-md bg-white border hover:bg-slate-50 transition"
             title="Plus d'actions"
             aria-label="Plus d'actions"
           >
@@ -268,7 +268,7 @@ export default function SearchBar({ placeholder = "Rechercher patient par nom, t
               }
               setOpen((s) => !s);
             }}
-            className="px-4 py-2 rounded-2xl text-white font-medium shadow bg-sky-600 hover:brightness-95 transition"
+            className="px-4 py-2 cursor-pointer rounded-2xl text-white font-medium shadow bg-sky-600 hover:brightness-95 transition"
             aria-label="Basculer résultats recherche"
             title="Basculer résultats recherche"
           >
