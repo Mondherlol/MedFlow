@@ -18,7 +18,7 @@ import NowPanel from "../../components/Reception/NowPanel";
 import UpcomingPanel from "../../components/Reception/UpcomingPanel";
 import toast from "react-hot-toast";
 import api from "../../api/axios";
-import HistoriqueSection from "../../components/Reception/HistoriqueSection";
+import HistoriqueSection from "../../components/Reception/HistoriqueSection/HistoriqueSection";
 import EditConsultationFloatingForm from "../../components/Reception/EditConsultationFloatingForm";
 
 
@@ -83,12 +83,12 @@ export default function ReceptionnistHome() {
       });
       setNowConsultations(filtered);    
 
-            // Mettre ceux passés aujourd'hui dans pastToday
+       // Mettre ceux passés aujourd'hui dans pastToday
       const pastTodayFiltered = consultations
         .filter(c => {
           const t = c.heure_debut || "00:00";
           const ct = new Date(`${c.date}T${t}`);
-          return ct < now || (c.statusConsultation === "termine" || c.statusConsultation === "annuler");
+          return ct < now && c.statusConsultation !== "encours" || (c.statusConsultation === "termine" || c.statusConsultation === "annuler");
         })
         .sort((a,b) => {
           const ta = new Date(`${a.date}T${a.heure_debut || "00:00"}`).getTime();
@@ -268,6 +268,7 @@ export default function ReceptionnistHome() {
             onCancel={handleCancel}
             accent={primaryColor}
             loadingAction={loadingAction}
+            loadingConsultations={loadingConsultations}
           />
 
           <UpcomingPanel
@@ -276,11 +277,12 @@ export default function ReceptionnistHome() {
             onCancel={handleCancel}
             accent={primaryColor}
             loadingAction={loadingAction}
+            loadingConsultations={loadingConsultations}
           />
         </section>
 
         {/* HISTORIQUE DE LA JOURNEE */}
-        <HistoriqueSection pastToday={pastToday} onCancel={(id) => handleCancel(id)} onPostpone={(id) => handlePostpone(id)} loadingAction={loadingAction} />
+        <HistoriqueSection pastToday={pastToday} onCancel={(id) => handleCancel(id)} onPostpone={(id) => handlePostpone(id)} loadingAction={loadingAction}  loadingConsultations={loadingConsultations} />
 
         {/* Edit modal for postponing/editing consultations */}
         {editingConsultation && (

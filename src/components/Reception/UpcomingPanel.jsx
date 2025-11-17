@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import ConsultationRow from "./ConsultationRow";
 
-export default function UpcomingPanel({ consultations = [], onPostpone, onCancel, accent = "#0ea5e9", loadingAction = "" }) {
+export default function UpcomingPanel({ consultations = [], onPostpone, onCancel, accent = "#0ea5e9", loadingAction = "", loadingConsultations = false }) {
   const [query, setQuery] = useState("");
 
   const filtered = useMemo(() => {
@@ -27,17 +27,37 @@ export default function UpcomingPanel({ consultations = [], onPostpone, onCancel
       </div>
 
       <div className="space-y-2">
-        {filtered.slice(0, 8).map(c => (
-          <ConsultationRow
-            key={c.id}
-            c={c}
-            onPostpone={() => onPostpone && onPostpone(c.id)}
-            onCancel={() => onCancel && onCancel(c.id)}
-            accent={accent}
-            loadingAction={loadingAction}
-          />
-        ))}
-        {!filtered.length && <div className="text-sm text-slate-500">Aucun rendez-vous à venir.</div>}
+        {loadingConsultations ? (
+          [0, 1, 2, 3].map(i => (
+            <div key={i} className="flex items-center justify-between p-3 bg-white border border-slate-50 rounded-lg shadow-sm animate-pulse">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-slate-100 rounded-full" />
+                <div className="space-y-2">
+                  <div className="w-40 h-3 bg-slate-100 rounded" />
+                  <div className="w-28 h-2 bg-slate-100 rounded" />
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-10 h-8 bg-slate-100 rounded" />
+                <div className="w-10 h-8 bg-slate-100 rounded" />
+              </div>
+            </div>
+          ))
+        ) : (
+          <>
+            {filtered.slice(0, 8).map(c => (
+              <ConsultationRow
+                key={c.id}
+                c={c}
+                onPostpone={() => onPostpone && onPostpone(c.id)}
+                onCancel={() => onCancel && onCancel(c.id)}
+                accent={accent}
+                loadingAction={loadingAction}
+              />
+            ))}
+            {!filtered.length && <div className="text-sm text-slate-500">Aucun rendez-vous à venir.</div>}
+          </>
+        )}
       </div>
     </div>
   );

@@ -136,7 +136,7 @@ export default function Doctors() {
           <div>
             <h2 className="text-2xl font-semibold text-slate-800">Médecins</h2>
             <p className="text-sm text-slate-500 mt-1">
-              Accédez rapidement aux plannings et prenez des rendez-vous.
+              Accédez rapidement aux plannings et gérez les rendez-vous.
             </p>
           </div>
 

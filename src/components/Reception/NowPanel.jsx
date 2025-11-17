@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Search } from "lucide-react";
 import ConsultationRow from "./ConsultationRow";
 
-export default function NowPanel({ consultations = [], onCheckIn, onCheckOut, onPostpone, onCancel, accent = "#0ea5e9", loadingAction = "" }) {
+export default function NowPanel({ consultations = [], onCheckIn, onCheckOut, onPostpone, onCancel, accent = "#0ea5e9", loadingAction = "", loadingConsultations = true }) {
   const [statusFilter, setStatusFilter] = useState("tous"); // "tous" | "encours" | "attente"
   const [doctorId, setDoctorId] = useState("");
 
@@ -64,7 +64,25 @@ export default function NowPanel({ consultations = [], onCheckIn, onCheckOut, on
         </div>
       </div>
 
-      {filtered.length ? (
+      {loadingConsultations ? (
+        <div className="space-y-2">
+          {[0, 1].map(i => (
+            <div key={i} className="flex items-center justify-between p-3 bg-white border border-slate-50 rounded-lg shadow-sm animate-pulse">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-slate-100 rounded-full" />
+                <div className="space-y-2">
+                  <div className="w-40 h-3 bg-slate-100 rounded" />
+                  <div className="w-28 h-2 bg-slate-100 rounded" />
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-10 h-8 bg-slate-100 rounded" />
+                <div className="w-10 h-8 bg-slate-100 rounded" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : filtered.length ? (
         <div className="space-y-2">
           {filtered.map(c => (
             <ConsultationRow
