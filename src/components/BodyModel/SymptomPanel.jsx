@@ -64,8 +64,8 @@ const SymptomCard = ({ symptom, onRemove, onUpdateIntensity }) => {
         {/* LIGNE 2: Infos Compactes (Corps + Emoji + Intensité) */}
         <div className="flex items-center justify-between mb-3">
           {/* Zone du corps */}
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
-            {symptom.partId ? getPartName(symptom.partId) : "Général"}
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
+            {symptom.partId ? (getPartName(symptom.partId) || symptom.partId) : "Général"}
           </span>
 
           {/* Zone Emoji + Label (Aligné à droite) */}
@@ -135,6 +135,7 @@ export default function SymptomPanel({
   useEffect(() => {
     if (query.length > 1) {
       const res = searchSymptoms(query);
+      console.log("Search results for query", query, ":", res);
       setResults(res.filter(r => !selectedSymptoms.find(s => s.id === r.id)));
       setIsSearching(true);
     } else {
@@ -274,7 +275,14 @@ export default function SymptomPanel({
       {/* --- FOOTER --- */}
       <div className="flex-none p-4 border-t border-slate-100 bg-white z-20">
         <button
-          onClick={onAnalyze}
+          onClick={() => {
+            const symptomsList = selectedSymptoms
+              .map((s) => (s.symptom || s.id || s.label || ""))
+              .map((t) => String(t).trim())
+              .filter(Boolean);
+            const payload = { symptoms: symptomsList.join(', '), lang: 'fr' };
+            if (onAnalyze) onAnalyze(payload);
+          }}
           disabled={selectedSymptoms.length === 0}
           className={`
             w-full flex items-center justify-center gap-3 py-3.5 rounded-xl font-bold text-sm tracking-wide shadow-xl transition-all transform active:scale-[0.98]

@@ -55,6 +55,12 @@ export default function ClinicNavbar() {
         { label: "Consultations", path: "/reception/consultations", icon: null},
     ];
 
+    const patientLinks = [
+        { label : "Accueil", path: "/patient", icon: null},
+        { label: "Mes rendez-vous", path: "/patient/rdv", icon: null},
+        { label: "Diagnostique IA", path: "/body", icon: <HeartPlus className="w-4 h-4"/> },
+    ];
+
     const isClinicHome = loc.pathname.toLowerCase().includes("home");
 
     const go = (hash) => {
@@ -168,6 +174,12 @@ export default function ClinicNavbar() {
                     ))}
 
                     { user && user.role === "RECEPTIONNISTE" && receptionnistLinks.map((it) => (
+                        <Link key={it.path} to={it.path} className={tokens.link}>
+                            <span className="inline-flex items-center gap-1">{it.icon}{it.label}</span>
+                        </Link>
+                    ))}
+
+                    { user && user.role === "PATIENT" && patientLinks.map((it) => (
                         <Link key={it.path} to={it.path} className={tokens.link}>
                             <span className="inline-flex items-center gap-1">{it.icon}{it.label}</span>
                         </Link>

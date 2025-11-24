@@ -27,6 +27,7 @@ export default function Medecins() {
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [photo, setPhoto] = useState(null);
+  const [specialite, setSpecialite] = useState('');
 
   // UI helpers
   const [q, setQ] = useState('');
@@ -48,6 +49,7 @@ export default function Medecins() {
     setPhone('');
     setPhoto(null);
     setEditingRec(null);
+    setSpecialite('');
   };
 
   const openCreate = () => {
@@ -62,6 +64,7 @@ export default function Medecins() {
     setPhone(rec.user?.phone || '');
     setPassword('');
     setPhoto(null);
+    setSpecialite(rec.specialite || '');
     setIsModalOpen(true);
   };
 
@@ -99,6 +102,7 @@ export default function Medecins() {
         if (phone !== (editingRec.user?.phone || '')) form.append('phone', phone);
         if (password) form.append('password', password);
         if (photo) form.append('photo', photo);
+        if (specialite !== (editingRec.specialite || '')) form.append('specialite', specialite);
 
         if (Array.from(form.keys()).length === 0) {
           toast('Aucune modification détectée.');
@@ -127,7 +131,7 @@ export default function Medecins() {
         form.append('email', email);
         form.append('password', password);
         form.append('full_name', fullName);
-        form.append('specialite', 'TEST'); // default empty specialty
+        if (specialite) form.append('specialite', specialite);
         if (phone) form.append('phone', phone);
         if (photo) form.append('photo', photo);
 
@@ -194,7 +198,8 @@ export default function Medecins() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <input
               value={q}
-              onChange={(e) => setQ(e.target.value)}
+              name={fullName}
+              isDoctor={true}
               placeholder="Rechercher un medecin…"
               className="pl-9 pr-3 py-2 rounded-lg border border-slate-200 bg-white shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-slate-300"
             />
@@ -259,8 +264,11 @@ export default function Medecins() {
         setPhone={setPhone}
         photo={photo}
         setPhoto={setPhoto}
+        specialite={specialite}
+        setSpecialite={setSpecialite}
         onSubmit={handleSubmit}
         actionLoading={actionLoading}
+        isDoctor={true}
       />
     </AdminTemplate>
   );

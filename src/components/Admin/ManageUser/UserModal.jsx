@@ -13,8 +13,10 @@ export default function UserModal({
   password, setPassword,
   phone, setPhone,
   photo, setPhoto,
+  specialite, setSpecialite,
   onSubmit,
   actionLoading,
+  isDoctor = false,
 }) {
   if (!isOpen) return null;
 
@@ -61,6 +63,9 @@ export default function UserModal({
           <input id="user-photo" type="file" accept="image/*" onChange={(e) => setPhoto(e.target.files?.[0] ?? null)} className="sr-only" />
         </label>
 
+
+        
+
         {previewSrc ? (
           <div className="relative">
             <img src={previewSrc} alt="aperçu" className="h-16 w-16 rounded-lg object-cover border border-slate-200" />
@@ -79,6 +84,9 @@ export default function UserModal({
              Aucune selection
           </div>
         )}
+
+
+        
       </div>
     </div>
   );
@@ -184,6 +192,34 @@ export default function UserModal({
               <PhotoPicker label="Photo (optionnel)" />
             </>
           )}
+  
+          {isDoctor && (
+          <div>
+            <label className="block text-sm font-medium text-slate-700">Spécialité</label>
+            <div className="mt-1 relative">
+              <select
+                value={specialite ?? ''}
+                onChange={(e) => setSpecialite(e.target.value)}
+                className="block w-full rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm focus:ring-2 focus:ring-sky-200 focus:border-slate-300"
+              >
+                <option value="">-- Aucune --</option>
+                <option value="Cardiology">Cardiologie</option>
+                <option value="Pulmonology">Pneumologie</option>
+                <option value="Neurology">Neurologie</option>
+                <option value="Dermatology">Dermatologie</option>
+                <option value="Pediatrics">Pédiatrie</option>
+                <option value="Gynecology">Gynécologie</option>
+                <option value="Orthopedics">Orthopédie</option>
+                <option value="Endocrinology">Endocrinologie</option>
+                <option value="Gastroenterology">Gastroentérologie</option>
+                <option value="Urology">Urologie</option>
+                <option value="Ophthalmology">Ophtalmologie</option>
+                <option value="Other">Autre</option>
+              </select>
+            </div>
+          </div>
+          )}
+
 
           {/* Footer */}
           <div className="flex items-center justify-end gap-2 pt-2">

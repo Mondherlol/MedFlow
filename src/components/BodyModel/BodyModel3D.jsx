@@ -5,6 +5,9 @@ import { Canvas } from "@react-three/fiber";
 import ControlsOverlay from "./ControlsOverlay";
 import { RotateCcw } from "lucide-react";
 import { BODY_ZONES, PARTS_NAMES, getPartName, getZoneKeyForPart, getZoneName } from "./BodyZone";
+import api from "../../api/axios";
+import TriageLoader from "./TriageLoader";
+import ResultsPanel from "./ResultsPanel";
 import FBXHuman from "./FBXHuman";
 import CustomOrbitControls from "./CustomOrbitControl"; 
 
@@ -135,25 +138,53 @@ export default function BodyModel3D() {
     setSelectedSymptoms((prev) => prev.map((s) => (s.id === id ? { ...s, intensity } : s)));
   };
 
-  const onAnalyze = () => {
-    console.log("Analyzing symptoms:", selectedSymptoms);
+  // default demographics: always send age 20 and sexe 'H'
+  const [userAge, setUserAge] = useState(20);
+  const [userSex, setUserSex] = useState("H");
+  const [needUserForm, setNeedUserForm] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisResults, setAnalysisResults] = useState(null);
+
+  // Called by SymptomPanel (it sends payload { symptoms, lang })
+  const onAnalyze = async (payload) => {
+    // always send default demographics (age 20, sexe 'H') per UX decision
+    const body = {
+      symptoms: payload.symptoms,
+      sex: 'M',
+      age: 20,
+      lang: "fr",
+    };
+
+    setIsAnalyzing(true);
+    setAnalysisResults(null);
+
+    try {
+      const res = await api.post("/api/ai/triage/", body);
+      if (res && res.data) {
+        setAnalysisResults(res.data);
+      } else {
+        setAnalysisResults({ results: [], best_confidence: null });
+      }
+    } catch (err) {
+      console.error("Triage API error", err);
+      setAnalysisResults({ results: [], best_confidence: null });
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
+
 
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-50 via-slate-100 to-slate-200 p-4 lg:p-8">
       <div className="max-w-6xl mx-auto">
-        {/* Titre */}
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl lg:text-4xl font-semibold text-slate-900 tracking-tight">
-            Indiquez où vous avez mal
-          </h1>
-          <p className="mt-2 text-sm text-slate-500">
-            Cliquez sur le modèle 3D, puis précisez le type de douleur dans le
-            panneau à droite.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] gap-8">
+  
+        { 
+          analysisResults ?
+                      <ResultsPanel results={analysisResults.results || []} best_confidence={analysisResults.best_confidence} onClose={() => setAnalysisResults(null)} />
+          :
+        <div className="relative">
+          {/** We can toggle a global overlay that covers both the 3D model and the symptom panel. */}
+          <div className={`${(needUserForm || isAnalyzing) ? 'pointer-events-none filter blur-sm' : ''} grid grid-cols-1 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] gap-8`}>
           {/* Zone modèle 3D */}
           <div className="bg-white/90 backdrop-blur-xl border border-slate-200 rounded-2xl shadow-xl shadow-slate-200/60 p-4 lg:p-6">
             <div
@@ -176,7 +207,7 @@ export default function BodyModel3D() {
                 <pointLight position={[0, 2, 2]} intensity={0.7} distance={10} />
 
                 <FBXHuman
-                  onBodyPartClick={handleBodyPartClick}
+                  onBodyPartClick={(p) => { if (!isAnalyzing) handleBodyPartClick(p); }}
                   selectedParts={selectedParts}
                   onPointerOverCallback={(e, name) => {
                     ensurePartMeta(name);
@@ -217,6 +248,10 @@ export default function BodyModel3D() {
                   </div>
                 </div>
               )}
+              {/* Overlay to block interactions during analysis (kept for fine-grain blocking on canvas) */}
+              {isAnalyzing && (
+                <div className="absolute inset-0 z-40 bg-black/10" />
+              )}
             </div>
 
             {/* Bouton effacer */}
@@ -233,21 +268,29 @@ export default function BodyModel3D() {
               </button>
             </div>
           </div>
-
-  
-          <div className="h-[500px] lg:h-[600px]"> 
-            <SymptomPanel
-              activePart={activePart}
-              selectedParts={selectedParts} // Nouveau : pour les onglets
-              onSelectPart={handleSelectPartFromPanel} // Nouveau : pour navigation
-              selectedSymptoms={selectedSymptoms}
-              onAddSymptom={onAddSymptom}
-              onRemoveSymptom={onRemoveSymptom}
-              onUpdateIntensity={onUpdateIntensity}
-              onAnalyze={onAnalyze}
-            />
-          </div>
+            <div className="h-[500px] lg:h-[600px]"> 
+              <SymptomPanel
+                activePart={activePart}
+                selectedParts={selectedParts} // Nouveau : pour les onglets
+                onSelectPart={handleSelectPartFromPanel} // Nouveau : pour navigation
+                selectedSymptoms={selectedSymptoms}
+                onAddSymptom={onAddSymptom}
+                onRemoveSymptom={onRemoveSymptom}
+                onUpdateIntensity={onUpdateIntensity}
+                onAnalyze={onAnalyze}
+              />
+            </div>
+          
         </div>
+
+          {isAnalyzing && (
+              <div className=" absolute inset-0 z-50 flex items-center justify-center">
+                    <TriageLoader open={isAnalyzing} onCancel={() => setIsAnalyzing(false)} />
+                  </div>
+           
+          )}
+        </div>
+        }
       </div>
     </div>
   );

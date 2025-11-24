@@ -2,98 +2,96 @@
 const BODY_ZONES = {
   chest: {
     label: "Torse / Poitrine",
-    parts: ["Pecs", "HautDos", "BasDos", "CageThoracique" ],
+    parts: ["Pecs", "CageThoracique" ],
+  },
+  back :{
+    label: "Dos",
+    parts: ["HautDos", "BasDos"],
   },
   abdomen: {
     label: "Ventre / Abdomen",
-    parts: ["Abdos", "VentreGauche", "VentreDroit", "Pubis"],
+    parts: ["Abdos", "VentreGauche", "VentreDroit"],
   },
-  head: {
+  pubis : {
+    label: "Pubis",
+    parts: ["Pubis"],
+  },
+  eyes: {
+    label: "Yeux",
+    parts: ["OeilGauche", "OeilDroit"],
+  },
+  nez: {
+    label: "Nez",
+    parts: ["Nez"],
+  },
+  bouche: {
+    label: "Bouche",
+    parts: ["Bouche", "Machoire"],
+  },
+  head:{
     label: "Tête",
     parts: [
-      "Nez",
-      "Bouche",
-      "Machoire",
-      "OeilGauche",
-      "OeilDroit",
       "TempeGauche",
       "TempeDroit",
-      "OreilleGauche",
-      "OreilleDroit",
       "DessusdeCraneGauche",
       "DessusdeCraneDroit",
       "ArriereCraneGauche",
       "ArriereCraneDroit",
     ],
   },
-  upperLimbLeft: {
-    label: "Bras / main gauche",
-    parts: [
-      "PouceGauche",
-      "IndexGauche001",
-      "MajeuGauche",
-      "AnnulaireGauche",
-      "OriculaireGauche001",
-      "MainGauche",
-      "PoignéeGauche",
-      "AvantBrasGauche",
-      "CreuCoudeGauche",
-      "CoudeGauche",
-      "BrasGauche",
-      "AisselleGauche",
-    ],
+  ears: {
+    label: "Oreilles",
+    parts: ["OreilleGauche", "OreilleDroit"],
   },
-  upperLimbRight: {
-    label: "Bras / main droite",
-    parts: [
-      "PouceDroit",
-      "IndexDroit",
-      "MajeuDroit",
-      "AnnulaireDroit",
-      "OriculaireDroit",
-      "MainDroit",
-      "PoignéeDroit",
-      "AvantBrasDroit",
-      "CreuCoudeDroit",
-      "CoudeDroit",
-      "BrasDroit",
-      "AisselleDroit",
-    ],
+  hands: {
+    label: "Mains",
+    parts: [ "MainGauche", "MainDroit"],
   },
-  lowerLimbLeft: {
-    label: "Jambe / pied gauche",
-    parts: [
-      "CuisseGauche",
-      "GenouxGauche",
-      "JambeGauche",
-      "ChevilleGauche",
-      "PiedGauche",
-      "OrteilGauche",
-      "TalonGauche",
-      "HancheGauche",
-    ],
+  feets: {
+    label: "Pieds",
+    parts: ["PiedGauche", "PiedDroit", "ChevilleGauche", "ChevilleDroit", "TalonGauche", "TalonDroit", "OrteilGauche", "OrteilDroit"],
   },
-  lowerLimbRight: {
-    label: "Jambe / pied droite",
-    parts: [
-      "CuisseDroit",
-      "GenouxDroit",
-      "JambeDroit",
-      "ChevilleDroit",
-      "PiedDroit",
-      "OrteilDroit",
-      "TalonDroit",
-      "HancheDroit",
-    ],
+  fingers: {
+    label: "Doigts",
+    parts: [ "PouceGauche", "IndexGauche001", "MajeuGauche", "AnnulaireGauche", "OriculaireGauche001",
+             "PouceDroit", "IndexDroit", "MajeuDroit", "AnnulaireDroit", "OriculaireDroit"],
   },
-  back: {
-    label: "Rachis / Dos",
-    parts: ["HautDos", "BasDos", "Nuque"],
+  arms: {
+    label: "Bras",
+    parts: [ "PoignéeGauche", "AvantBrasGauche", "CreuCoudeGauche", "CoudeGauche", "EpauleGauche", "BrasGauche",
+             "PoignéeDroit", "AvantBrasDroit", "CreuCoudeDroit", "CoudeDroit", "EpauleDroit", "BrasDroit"],
+  },
+  armpits: {
+    label: "Aisselles",
+    parts: ["AisselleGauche", "AisselleDroit"],
+  },
+  thighs: {
+    label: "Cuisses",
+    parts: ["CuisseGauche", "CuisseDroit"],
+  },
+
+  hips: {
+    label: "Hanches",
+    parts: ["HancheGauche", "HancheDroit"],
+  },
+  knees: {
+    label: "Genoux",
+    parts: ["GenouxGauche", "GenouxDroit"],
+  },
+  lowerBack: {
+    label: "Bas du dos",
+    parts: ["BasDos"],
   },
   neck: {
     label: "Cou / nuque",
     parts: ["Cou", "Nuque"],
   },
+  Buttocks : {
+    label: "Fesses",
+    parts: ["Fesse"],
+  },
+
+  
   other: {
     label: "Autre région",
     parts: [],

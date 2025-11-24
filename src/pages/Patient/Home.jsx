@@ -113,7 +113,7 @@ export default function HomePatient() {
 
                         <div className="mt-6">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                <Link to="/patient/appointments/new" className="col-span-1 bg-sky-50 hover:bg-sky-100 px-4 py-3 rounded-lg flex items-center gap-3 border border-sky-100">
+                                <Link to="/patient/consultations/new" className="col-span-1 bg-sky-50 hover:bg-sky-100 px-4 py-3 rounded-lg flex items-center gap-3 border border-sky-100">
                                     <PlusCircle className="w-6 h-6 text-sky-600" />
                                     <div>
                                         <div className="text-sm font-medium">Prendre un RDV</div>

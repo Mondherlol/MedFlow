@@ -67,6 +67,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import ClinicRoute from "./components/ClinicRoute";
 import { Toaster } from "react-hot-toast";
 import BodyModel3D from "./pages/BodyModel";
+import NewAppointment from "./pages/Patient/NewAppointment";
 
 
 export default function App() {
@@ -135,6 +136,7 @@ export default function App() {
 
   const patientsRoutes = [
     { path: "/patient", component: HomePatient, clinicRoute: true, protectedRoles: ["PATIENT"] },
+    { path :"/patient/consultations/new", component: NewAppointment, clinicRoute: true, protectedRoles: ["PATIENT"] },
   ];
 
   const clinicRoutes = [...clinicPublicRoutes, ...adminRoutes, ...doctorRoutes, ...receptionnistRoutes, ...patientsRoutes];
