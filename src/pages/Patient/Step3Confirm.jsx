@@ -14,6 +14,8 @@ function Step3Confirm({
   iaNotes,
   setWantIA,
   setIaNotes,
+  autoDiagnosticId,
+  setAutoDiagnosticId,
   submitting,
   submitRequest,
   setStep,
@@ -24,8 +26,8 @@ function Step3Confirm({
   const contactEmail = user?.email || "—";
   const contactPhone = user?.phone || user?.phone_number || "—";
 
-  const handleDiagnosticConfirm = (diagnosticText, analysisResults) => {
-    setIaNotes(diagnosticText);
+  const handleDiagnosticConfirm = (diagnosticId, analysisResults) => {
+    setAutoDiagnosticId(diagnosticId);
     setDiagnosticData(analysisResults);
     setWantIA(true);
   };
@@ -99,7 +101,7 @@ function Step3Confirm({
                     <button
                       onClick={() => {
                         setWantIA(false);
-                        setIaNotes("");
+                        setAutoDiagnosticId(null);
                         setDiagnosticData(null);
                       }}
                       className="text-xs text-emerald-700 hover:text-emerald-900 font-semibold underline"
@@ -217,7 +219,7 @@ function Step3Confirm({
                 <strong>{getSpecialiteDisplay(selectedDoctor?.specialite) || "Médecin"}</strong>
               </p>
               <p>
-                Créneaux 
+                Créneaux : <strong>{noPreference && "Pas de préférence de créneau"}</strong>
               </p>
               {slotsSummary()}
               <p>

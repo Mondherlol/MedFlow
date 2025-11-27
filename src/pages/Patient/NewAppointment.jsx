@@ -73,6 +73,7 @@ export default function NewAppointment() {
   const [availableSlots, setAvailableSlots] = useState([]);
   const [patientOptions, setPatientOptions] = useState([]);
   const [noPreference, setNoPreference] = useState(false);
+  const [autoDiagnosticId, setAutoDiagnosticId] = useState(null);
 
   const [wantIA, setWantIA] = useState(false);
   const [iaNotes, setIaNotes] = useState("");
@@ -220,6 +221,11 @@ export default function NewAppointment() {
         want_ai: wantIA,
         ai_notes: wantIA ? iaNotes : "",
       };
+      
+      // Ajouter l'ID du diagnostic IA si disponible
+      if (autoDiagnosticId) {
+        payload.auto_diagnostic = autoDiagnosticId;
+      }
 
       await api.post(`/api/consultation-requests/`, payload);
       setDone(true);
@@ -321,6 +327,8 @@ export default function NewAppointment() {
             iaNotes={iaNotes}
             setWantIA={setWantIA}
             setIaNotes={setIaNotes}
+            autoDiagnosticId={autoDiagnosticId}
+            setAutoDiagnosticId={setAutoDiagnosticId}
             submitting={submitting}
             submitRequest={submitRequest}
             setStep={setStep}

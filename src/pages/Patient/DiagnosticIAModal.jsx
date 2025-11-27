@@ -174,34 +174,92 @@ export default function DiagnosticIAModal({ isOpen, onClose, onConfirm }) {
     }
   };
 
-  const handleConfirmResults = () => {
+  const handleConfirmResults = async () => {
     if (analysisResults) {
-      // Formater les résultats de manière structurée
-      const diagnosticData = {
-        timestamp: new Date().toISOString(),
-        symptoms: selectedSymptoms.map(s => ({
-          name: s.name || s.label || 'Symptôme inconnu',
-          intensity: s.intensity,
-          bodyPart: s.partId || 'Non spécifié'
-        })),
-        maladiesProbables: analysisResults.results && analysisResults.results.length > 0 
-          ? analysisResults.results.map(r => ({
-              disease: r.disease || 'Non identifié',
-              confidence: r.confidence ? (r.confidence * 100).toFixed(1) + '%' : 'N/A',
-              severity: r.severity || 'Non classifiée',
-              specialty: r.specialty || 'Non spécifiée',
-              description: r.description || 'Aucune description',
-              treatment: r.treatment || 'À déterminer',
-              cause: r.cause || 'Non documentée'
-            }))
-          : [],
-        confidenceGlobale: analysisResults.best_confidence 
-          ? (analysisResults.best_confidence * 100).toFixed(1) + '%' 
-          : 'N/A'
-      };
+      setIsAnalyzing(true);
       
-      onConfirm(JSON.stringify(diagnosticData, null, 2), diagnosticData);
-      onClose();
+      try {
+        // Préparer les données pour l'API
+        const payload = {
+          symptoms: selectedSymptoms.map(s => ({
+            symptomeName: s.name || s.label || 'Symptôme inconnu',
+            intensite: String(s.intensity),
+            bodyPart: s.partId || 'Non spécifié'
+          })),
+          predictions: analysisResults.results && analysisResults.results.length > 0 
+            ? analysisResults.results.map(r => ({
+                disease: r.disease || 'Non identifié',
+                specialty: r.specialty || 'Non spécifiée',
+                severity: r.severity || 'Non classifiée',
+                treatment: r.treatment || 'À déterminer',
+                at_risk_age: r.at_risk_age || 'Non documenté',
+                cause: r.cause || 'Non documentée',
+                confidence: r.confidence || 0
+              }))
+            : [],
+          notes: `Analyse IA du ${new Date().toLocaleDateString('fr-FR')} - Confiance globale: ${analysisResults.best_confidence ? (analysisResults.best_confidence * 100).toFixed(1) + '%' : 'N/A'}`
+        };
+
+        // Enregistrer dans la base de données
+        const response = await api.post('/api/auto-diagnostics/', payload);
+        
+        // Formater les données pour l'affichage
+        const diagnosticData = {
+          timestamp: new Date().toISOString(),
+          symptoms: selectedSymptoms.map(s => ({
+            name: s.name || s.label || 'Symptôme inconnu',
+            intensity: s.intensity,
+            bodyPart: s.partId || 'Non spécifié'
+          })),
+          maladiesProbables: analysisResults.results && analysisResults.results.length > 0 
+            ? analysisResults.results.map(r => ({
+                disease: r.disease || 'Non identifié',
+                confidence: r.confidence ? (r.confidence * 100).toFixed(1) + '%' : 'N/A',
+                severity: r.severity || 'Non classifiée',
+                specialty: r.specialty || 'Non spécifiée',
+                description: r.description || 'Aucune description',
+                treatment: r.treatment || 'À déterminer',
+                cause: r.cause || 'Non documentée'
+              }))
+            : [],
+          confidenceGlobale: analysisResults.best_confidence 
+            ? (analysisResults.best_confidence * 100).toFixed(1) + '%' 
+            : 'N/A'
+        };
+        
+        // Retourner l'ID et les données formatées
+        onConfirm(response.data.id, diagnosticData);
+        onClose();
+      } catch (err) {
+        console.error('Erreur lors de la sauvegarde du diagnostic:', err);
+        // En cas d'erreur, on peut quand même continuer sans l'ID
+        const diagnosticData = {
+          timestamp: new Date().toISOString(),
+          symptoms: selectedSymptoms.map(s => ({
+            name: s.name || s.label || 'Symptôme inconnu',
+            intensity: s.intensity,
+            bodyPart: s.partId || 'Non spécifié'
+          })),
+          maladiesProbables: analysisResults.results && analysisResults.results.length > 0 
+            ? analysisResults.results.map(r => ({
+                disease: r.disease || 'Non identifié',
+                confidence: r.confidence ? (r.confidence * 100).toFixed(1) + '%' : 'N/A',
+                severity: r.severity || 'Non classifiée',
+                specialty: r.specialty || 'Non spécifiée',
+                description: r.description || 'Aucune description',
+                treatment: r.treatment || 'À déterminer',
+                cause: r.cause || 'Non documentée'
+              }))
+            : [],
+          confidenceGlobale: analysisResults.best_confidence 
+            ? (analysisResults.best_confidence * 100).toFixed(1) + '%' 
+            : 'N/A'
+        };
+        onConfirm(null, diagnosticData);
+        onClose();
+      } finally {
+        setIsAnalyzing(false);
+      }
     }
   };
 
