@@ -60,8 +60,4 @@
   "overrides": {
   "esbuild": "npm:esbuild-wasm@0.17.19"
 }
-
-  
-  
-
 }
