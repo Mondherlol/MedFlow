@@ -26,9 +26,9 @@ import {
 
 const BLOOD_TYPES = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 const GENDERS = [
-  { value: "M", label: "Homme" },
-  { value: "F", label: "Femme" },
-  { value: "other", label: "Autre" },
+  { value: "HOMME", label: "Homme" },
+  { value: "FEMME", label: "Femme" },
+  { value: "AUTRE", label: "Autre" },
 ];
 
 const UpdatePatientInfos = () => {
@@ -60,21 +60,22 @@ const UpdatePatientInfos = () => {
 
   useEffect(() => {
     if (user) {
+       console.log("Loaded user data:", user);
       setFormData({
         full_name: user.full_name || "",
         email: user.email || "",
         phone: user.phone || "",
-        date_naissance: user.date_naissance || "",
-        adresse: user.adresse || "",
-        genre: user.genre || "",
-        blood_type: user.blood_type || "",
-        height_cm: user.height_cm || "",
-        weight_kg: user.weight_kg || "",
-        allergies: user.allergies || [],
-        chronic_diseases: user.chronic_diseases || [],
+        date_naissance: user.patient.date_naissance || "",
+        adresse: user.patient.adresse || "",
+        genre: user.patient.genre || "",
+        blood_type: user.patient.blood_type || "",
+        height_cm: user.patient.height_cm || "",
+        weight_kg: user.patient.weight_kg || "",
+        allergies: user.patient.allergies || [],
+        chronic_diseases: user.patient.chronic_diseases || [],
       });
-      if (user.photo) {
-        setPreviewImage(getImageUrl(user.photo));
+      if (user.photo_url) {
+        setPreviewImage(getImageUrl(user.photo_url));
       }
       setLoading(false);
     }
@@ -159,7 +160,10 @@ const UpdatePatientInfos = () => {
       // Ajouter les champs texte
       Object.keys(formData).forEach((key) => {
         if (key === "allergies" || key === "chronic_diseases") {
-          data.append(key, JSON.stringify(formData[key]));
+          // Ajouter chaque élément du tableau séparément
+          formData[key].forEach((item) => {
+            data.append(key, item);
+          });
         } else if (formData[key]) {
           data.append(key, formData[key]);
         }
@@ -170,7 +174,7 @@ const UpdatePatientInfos = () => {
         data.append("photo", photoFile);
       }
 
-      const response = await api.patch(`/api/patients/${user.id}/`, data, {
+      const response = await api.patch(`/api/patients/${user.patient.id}/`, data, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -179,7 +183,6 @@ const UpdatePatientInfos = () => {
       if (response.status === 200) {
         toast.success("Vos informations ont été mises à jour avec succès !");
         // Mettre à jour l'utilisateur dans le contexte
-        setUser(response.data);
         navigate("/patient");
       }
     } catch (error) {

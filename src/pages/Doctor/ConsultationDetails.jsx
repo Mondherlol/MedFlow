@@ -9,6 +9,7 @@ import HistoriqueMedical from "../../components/Doctor/ConsultationComponents/Hi
 import PatientInfoDetailed from "../../components/Doctor/ConsultationComponents/PatientInfoDetailed";
 import DiagnosticEditor from "../../components/Doctor/ConsultationComponents/DiagnosticEditor";
 import OrdonnanceEditor from "../../components/Doctor/ConsultationComponents/OrdonnanceEditor";
+import AutoDiagnosticAI from "../../components/Doctor/ConsultationComponents/AutoDiagnosticAI";
 import { getStatusText } from "../../utils/statusUtils";
 
 export default function ConsultationDetails() {
@@ -242,21 +243,9 @@ export default function ConsultationDetails() {
           </div>
         </div>
 
-        {/* Auto Diagnostic */}
+        {/* Auto Diagnostic IA */}
         {consultation.auto_diagnostic && (
-          <div className="bg-gradient-to-r from-sky-50 to-blue-50 rounded-2xl p-6 shadow-sm border border-sky-100">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-lg bg-sky-100 flex items-center justify-center flex-shrink-0">
-                <User className="w-5 h-5 text-sky-600" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-sm font-semibold text-sky-900 mb-2">Auto-diagnostic du patient</h3>
-                <div className="bg-white/80 rounded-lg p-4 text-sm text-slate-700">
-                  {consultation.auto_diagnostic}
-                </div>
-              </div>
-            </div>
-          </div>
+          <AutoDiagnosticAI autoDiagnostic={consultation.auto_diagnostic} />
         )}
 
         {/* Grid Layout: 2 columns - Left (diagnostic/ordonnance) | Right (patient info) */}

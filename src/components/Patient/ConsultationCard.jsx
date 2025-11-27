@@ -88,7 +88,7 @@ export default function ConsultationCard({ consultation }) {
   const specialty = doctor.specialite || doctor.specialty || "";
 
   // Use patient photo if provided else doctor photo as fallback
-  const photoPath = consultation?.patient?.photo_url || doctor.photo_url || doctor.photo || null;
+  const photoPath =  doctor.photo_url || doctor.photo || null;
   const avatar = getImageUrl(photoPath);
 
   return (

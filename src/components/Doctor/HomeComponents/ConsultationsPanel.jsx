@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { timeToMin, nowMinutes } from "../../../utils/timeUtils";
 import toast from "react-hot-toast";
+import { getImageUrl } from "../../../utils/image";
 
 function ConsultationsPanel({ 
   consultations = [], 
@@ -104,9 +105,16 @@ function ConsultationsPanel({
               return (
                 <div key={consultation.id} className="mb-3 p-3 rounded-lg border border-slate-100 hover:shadow-md transition flex items-center justify-between">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 font-semibold">
-                      {getInitials(patientName)}
-                    </div>
+                    {
+                        consultation.patient?.photo_url ? (
+                          <img 
+                            src={getImageUrl(consultation.patient.photo_url)} alt={patientName} className="w-10 h-10 rounded-full object-cover" />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 font-semibold">
+                            {getInitials(patientName)}
+                          </div>
+                        )
+                    }
                     <div className="min-w-0">
                       <div className="font-semibold text-slate-900 truncate">{patientName}</div>
                       <div className="text-xs text-slate-400">
@@ -150,9 +158,16 @@ function ConsultationsPanel({
               return (
                 <div key={consultation.id} className="mb-3 p-3 rounded-lg border border-slate-100 hover:shadow-md transition flex items-center justify-between cursor-default">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 font-semibold">
-                      {getInitials(patientName)}
-                    </div>
+                    {
+                      consultation.patient?.photo_url ? (
+                        <img 
+                          src={getImageUrl(consultation.patient.photo_url)} alt={patientName} className="w-10 h-10 rounded-full object-cover" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 font-semibold">
+                          {getInitials(patientName)}
+                        </div>
+                      )
+                    }
                     <div className="min-w-0">
                       <div className="text-sm text-slate-600">{consultation.heure_debut}</div>
                       <div className="font-semibold text-slate-900 truncate">{patientName}</div>

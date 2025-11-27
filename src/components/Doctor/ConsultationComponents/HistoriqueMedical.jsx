@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Calendar, Clock, FileText, ChevronRight, ChevronDown, ChevronUp } from "lucide-react";
 import api from "../../../api/axios";
 import toast from "react-hot-toast";
+import { getStatusText } from "../../../utils/statusUtils";
 
 export default function HistoriqueMedical({ patientId, currentConsultationId }) {
   const navigate = useNavigate();
@@ -39,10 +40,10 @@ export default function HistoriqueMedical({ patientId, currentConsultationId }) 
 
   const getStatusBadge = (status) => {
     const badges = {
-      confirme: "bg-emerald-100 text-emerald-700",
-      termine: "bg-slate-100 text-slate-700",
+      confirme: "bg-orange-100 text-orange-700",
+      termine: "bg-sky-100 text-sky-700",
       annule: "bg-red-100 text-red-700",
-      "en-attente": "bg-amber-100 text-amber-700"
+      encours: "bg-blue-100 text-blue-700"
     };
     return badges[status] || "bg-slate-100 text-slate-700";
   };
@@ -141,7 +142,7 @@ export default function HistoriqueMedical({ patientId, currentConsultationId }) 
                       })}
                     </span>
                     <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium shrink-0 ${getStatusBadge(consultation.statusConsultation)}`}>
-                      {consultation.statusConsultation}
+                      {getStatusText(consultation.statusConsultation)}
                     </span>
                   </div>
 

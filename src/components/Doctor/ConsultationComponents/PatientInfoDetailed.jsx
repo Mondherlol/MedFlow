@@ -11,7 +11,6 @@ export default function PatientInfoDetailed({ patientId }) {
     if (patientId) {
       fetchPatient();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [patientId]);
 
   async function fetchPatient() {
@@ -176,11 +175,7 @@ export default function PatientInfoDetailed({ patientId }) {
               </div>
             </div>
           </div>
-          {bmi && (
-            <div className="text-sm font-bold text-emerald-600">
-              IMC: {bmi}
-            </div>
-          )}
+     
         </div>
       </div>
 
