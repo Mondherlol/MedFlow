@@ -35,6 +35,7 @@ import HomeDoctor from "./pages/Doctor/Home";
 import DoctorHoraires from "./pages/Doctor/HorairesMedecin";
 import EmploiMedecin from "./pages/Doctor/EmploiMedecin";
 import TarifsMedecin from "./pages/Doctor/TarifsMedecin"; 
+import EditDoctorInfos from "./pages/Doctor/EditDoctorInfos";
 
 // Receptionnist pages
 import PatientsListPage from "./pages/Receptionnist/PatientsListPage";
@@ -120,6 +121,7 @@ export default function App() {
     { path: "/doctor/horaires", component: DoctorHoraires, clinicRoute: true, protectedRoles: ["MEDECIN"] },
     { path :"/doctor/emploi", component: EmploiMedecin, clinicRoute: true, protectedRoles: ["MEDECIN"] },
     { path: "/doctor/tarifs", component: TarifsMedecin, clinicRoute: true, protectedRoles: ["MEDECIN"] },
+    { path: "/doctor/profile/edit", component: EditDoctorInfos, clinicRoute: true, protectedRoles: ["MEDECIN"] },
   ];
 
   const receptionnistRoutes = [

@@ -2,7 +2,7 @@ import { Clock } from "lucide-react";
 import { useEffect, useMemo, useRef } from "react";
 import { timeToMin, minToTime, nowMinutes } from "../../../utils/timeUtils";
 
-function TimelineCompact({ events = [], start = 8, end = 18, step = 30, onSelectTime }) {
+function TimelineCompact({ consultations = [], start = 8, end = 18, step = 30, onSelectTime }) {
   const containerRef = useRef(null);
   const slotRefs = useRef({});
   const nowMin = useMemo(() => nowMinutes(), []);
@@ -17,15 +17,16 @@ function TimelineCompact({ events = [], start = 8, end = 18, step = 30, onSelect
     return arr;
   }, [start, end, step]);
 
-  // events grouped by slot
+  // consultations grouped by slot
   const bySlot = useMemo(() => {
     const map = {};
-    events.forEach((e) => {
-      map[e.time] ??= [];
-      map[e.time].push(e);
+    consultations.forEach((c) => {
+      const time = c.heure_debut;
+      map[time] ??= [];
+      map[time].push(c);
     });
     return map;
-  }, [events]);
+  }, [consultations]);
 
   // auto-scroll centré sur l'heure actuelle 
   useEffect(() => {
@@ -61,7 +62,7 @@ function TimelineCompact({ events = [], start = 8, end = 18, step = 30, onSelect
             <div className="text-xs text-slate-400">Vue compacte (scroll interne)</div>
           </div>
         </div>
-        <div className="text-xs text-slate-400">{events.length} RDV</div>
+        <div className="text-xs text-slate-400">{consultations.length} RDV</div>
       </div>
 
       <div ref={containerRef} className="overflow-auto h-[calc(100%-56px)] pr-2">
@@ -85,17 +86,22 @@ function TimelineCompact({ events = [], start = 8, end = 18, step = 30, onSelect
                       <div className="text-xs text-slate-300">—</div>
                     ) : (
                       <div className="flex flex-wrap gap-2">
-                        {evs.map((ev) => (
-                          <div
-                            key={ev.id}
-                            className={`flex items-center gap-2 px-3 py-1 rounded-lg text-sm font-medium transition
-                              ${ev.status === "cancelled" ? "bg-red-50 text-red-700 border border-red-100" : "bg-sky-50 text-sky-800 border border-sky-100"}
-                            `}
-                          >
-                            <div className="truncate max-w-[160px]">{ev.patient}</div>
-                            <div className="text-xs text-slate-400">{ev.duration}m</div>
-                          </div>
-                        ))}
+                        {evs.map((consultation) => {
+                          const duration = Math.round(
+                            (timeToMin(consultation.heure_fin) - timeToMin(consultation.heure_debut))
+                          );
+                          return (
+                            <div
+                              key={consultation.id}
+                              className={`flex items-center gap-2 px-3 py-1 rounded-lg text-sm font-medium transition
+                                ${consultation.statusConsultation === "annule" ? "bg-red-50 text-red-700 border border-red-100" : "bg-sky-50 text-sky-800 border border-sky-100"}
+                              `}
+                            >
+                              <div className="truncate max-w-40">{consultation.patient?.full_name || "Patient"}</div>
+                              <div className="text-xs text-slate-400">{duration}m</div>
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
                   </div>

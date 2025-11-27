@@ -65,7 +65,7 @@ const EditDoctorInfos = () => {
     
     try {
       // Récupérer les données du médecin
-      const response = await api.get(`/api/doctors/by-user/${user.id}/`);
+      const response = await api.get(`/api/doctors/${user.doctor.id}/`);
       const doctor = response.data;
       setDoctorData(doctor);
 
@@ -78,8 +78,8 @@ const EditDoctorInfos = () => {
         numero_salle: doctor.numero_salle || "",
       });
 
-      if (doctor.user?.photo) {
-        setPreviewImage(getImageUrl(doctor.user.photo));
+      if (doctor.user?.photo_url) {
+        setPreviewImage(getImageUrl(doctor.user.photo_url));
       }
       
       setLoading(false);
@@ -376,35 +376,7 @@ const EditDoctorInfos = () => {
           </div>
         </div>
 
-        {/* Informations supplémentaires */}
-        {doctorData && (
-          <div className="bg-gradient-to-r from-slate-50 to-slate-100 rounded-2xl p-6 border border-slate-200">
-            <h3 className="text-sm font-bold text-slate-700 mb-4 uppercase tracking-wide">
-              Informations complémentaires
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {doctorData.duree_consultation && (
-                <div className="bg-white rounded-lg p-3 shadow-sm">
-                  <div className="text-xs text-slate-500">Durée consultation</div>
-                  <div className="text-lg font-bold text-slate-900">
-                    {doctorData.duree_consultation} min
-                  </div>
-                </div>
-              )}
-              {doctorData.tarif_consultation && (
-                <div className="bg-white rounded-lg p-3 shadow-sm">
-                  <div className="text-xs text-slate-500">Tarif consultation</div>
-                  <div className="text-lg font-bold text-slate-900">
-                    {doctorData.tarif_consultation} TND
-                  </div>
-                </div>
-              )}
-            </div>
-            <p className="text-xs text-slate-500 mt-4">
-              Ces informations sont gérées par l'administration de la clinique.
-            </p>
-          </div>
-        )}
+
 
         {/* Boutons d'action */}
         <div className="flex justify-end gap-4 pt-4 border-t border-slate-200">
@@ -419,7 +391,7 @@ const EditDoctorInfos = () => {
           <button
             type="submit"
             disabled={submitting}
-            className="px-6 py-3 bg-linear-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold hover:from-indigo-700 hover:to-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-lg shadow-indigo-500/30"
+            className="px-6 cursor-pointer py-3 bg-linear-to-r from-indigo-600 to-sky-600 text-white rounded-xl font-semibold hover:from-indigo-700 hover:to-sky-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-lg shadow-indigo-500/30"
           >
             {submitting ? (
               <>
