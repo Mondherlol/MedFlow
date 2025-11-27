@@ -243,7 +243,7 @@ export default function Medecins() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filtered.map((r) => (
-              <UserCard key={r.id} record={r} onEdit={openEdit} onDelete={handleDelete} actionLoading={actionLoading} brandPrimary={brandPrimary} />
+              <UserCard key={r.id} record={r} onEdit={openEdit} onDelete={handleDelete} onDoctorSaved={fetchDoctors} actionLoading={actionLoading} brandPrimary={brandPrimary} />
             ))}
           </div>
         )}

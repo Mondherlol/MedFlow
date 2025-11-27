@@ -1,5 +1,5 @@
-import React from 'react';
 import { getImageUrl } from '../../../utils/image.jsx';
+import { getSpecialiteDisplay } from '../../../utils/specialite.jsx';
 
 export default function DoctorCard({ doctor, onSelect }) {
   const name = doctor.user?.full_name || 'Médecin';
@@ -9,7 +9,7 @@ export default function DoctorCard({ doctor, onSelect }) {
       .map((s) => s[0] || '')
       .slice(0, 2)
       .join('') || 'MD';
-  const specialite = doctor.specialite || 'Médecin généraliste';
+  const specialite = getSpecialiteDisplay(doctor.specialite) || 'Médecin généraliste';
   const salle = doctor.numero_salle ? `Salle ${doctor.numero_salle}` : '—';
   const price =
     doctor.tarif_consultation != null ? `${doctor.tarif_consultation} TND` : 'Prix variable';
@@ -35,7 +35,8 @@ export default function DoctorCard({ doctor, onSelect }) {
       <div className="flex-1">
         <h3 className="text-sm font-semibold text-slate-900">{name}</h3>
         <p className="text-xs text-slate-500 mt-0.5">{specialite}</p>
-        <p className="text-[11px] text-slate-400 mt-1">{salle}</p>
+        <p className="text-[11px] text-slate-400 mt-1">{salle} - <span>Durée consultation : {doctor.duree_consultation ? `${doctor.duree_consultation} min` : '—'}</span>
+          </p> 
       </div>
 
       <button

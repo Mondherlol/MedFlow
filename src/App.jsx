@@ -52,7 +52,7 @@ import PlanningMedecin from "./pages/Receptionnist/PlanningMedecin";
 import HomePatient from "./pages/Patient/Home";
 import MyAppointments from "./pages/Patient/MyAppointments";
 import ConsultationDetail from "./pages/Patient/ConsultationDetail";  
-
+import UpdatePatientInfos from "./pages/Patient/UpdatePatientInfos";
 // Other pages
 import Landing from "./pages/Landing";
 import StartClinic from "./pages/StartClinic";
@@ -141,6 +141,7 @@ export default function App() {
     { path :"/patient/consultations/new", component: NewAppointment, clinicRoute: true, protectedRoles: ["PATIENT"] },
     { path :"/patient/rdv", component: MyAppointments, clinicRoute: true, protectedRoles: ["PATIENT"] },
     { path :"/patient/appointments/:id", component: ConsultationDetail, clinicRoute: true, protectedRoles: ["PATIENT"] },
+    { path :"/patient/profile/edit", component: UpdatePatientInfos, clinicRoute: true, protectedRoles: ["PATIENT"] },
   ];
 
   const clinicRoutes = [...clinicPublicRoutes, ...adminRoutes, ...doctorRoutes, ...receptionnistRoutes, ...patientsRoutes];

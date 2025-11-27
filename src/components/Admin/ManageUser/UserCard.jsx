@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import {
-  User as UserIcon, Edit2, Trash2, Key, ShieldCheck, Mail, Phone, BadgeCheck, MoreHorizontal
+  User as UserIcon, Edit2, Trash2, Key, ShieldCheck, Mail, Phone, BadgeCheck, MoreHorizontal,
+  Settings
 } from 'lucide-react';
 import ChangePasswordModal from './ChangePasswordModal';
+import EditDoctorInfosModal from './EditDoctorInfosModal';
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -11,12 +13,14 @@ export default function UserCard({
   record,
   onEdit,
   onDelete,
+  onDoctorSaved,
   actionLoading,
   brandPrimary = 'indigo',
   variant = 'tile',
 }) {
   const u = record?.user || record || {};
   const [openChangePwd, setOpenChangePwd] = useState(false);
+  const [openDoctorModal, setOpenDoctorModal] = useState(false);
 
   const name  = u.full_name || u.name || '—';
   const email = u.email || '—';
@@ -146,6 +150,18 @@ export default function UserCard({
           >
             <Edit2 className="w-4 h-4" /> Modifier
           </button>
+          {(
+            // detect likely doctor records: presence of specialite field or role label containing "doc"
+            ('specialite' in record) || (u.role && u.role.toLowerCase().includes('doc')) || (record.role && typeof record.role === 'string' && record.role.toLowerCase().includes('doc'))
+          ) && (
+            <button
+              onClick={() => setOpenDoctorModal(true)}
+              className="cursor-pointer inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-sky-200   "
+              title="Infos médecin"
+            >
+              <Settings className="w-4 h-4" /> 
+            </button>
+          )}
           <button
             onClick={() => setOpenChangePwd(true)}
             className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-sky-200"
@@ -172,6 +188,12 @@ export default function UserCard({
         onClose={() => setOpenChangePwd(false)}
         userId={record.user.id}
         onSuccess={() => setOpenChangePwd(false)}
+      />
+      <EditDoctorInfosModal
+        isOpen={openDoctorModal}
+        onClose={() => setOpenDoctorModal(false)}
+        doctorRecord={record}
+        onSaved={() => { setOpenDoctorModal(false); onDoctorSaved?.(); }}
       />
     </>
   );

@@ -7,12 +7,7 @@ import { twMerge } from "tailwind-merge";
 import { searchSymptoms, getSymptomsForPart } from "./SymptomData";
 import { getPartName } from "./BodyZone";
 
-function cn(...inputs) {
-  return twMerge(clsx(inputs));
-}
 
-
-// --- CONFIGURATION DE LA DOULEUR ---
 const PAIN_LEVELS = [
   { label: "Léger", emoji: "🙂", color: "bg-emerald-400", text: "text-emerald-600", gradient: "from-emerald-300 to-emerald-500", shadow: "shadow-emerald-200" },
   { label: "Gênant", emoji: "😐", color: "bg-sky-400", text: "text-sky-600", gradient: "from-sky-300 to-sky-500", shadow: "shadow-sky-200" },
@@ -33,7 +28,6 @@ const getPainInfo = (level) => {
   return PAIN_LEVELS[Math.max(0, Math.min(idx, PAIN_LEVELS.length - 1))];
 };
 
-// --- NOUVEAU COMPOSANT CARD COMPACT ---
 const SymptomCard = ({ symptom, onRemove, onUpdateIntensity }) => {
   const painInfo = getPainInfo(symptom.intensity);
 
@@ -93,7 +87,6 @@ const SymptomCard = ({ symptom, onRemove, onUpdateIntensity }) => {
           </div>
         </div>
 
-        {/* LIGNE 3: Slider (Full width sans boite) */}
         <div className="relative w-full h-6 flex items-center touch-none select-none">
           <Slider.Root
             className="relative flex items-center select-none touch-none w-full h-5"
@@ -126,7 +119,8 @@ export default function SymptomPanel({
   onAddSymptom,
   onRemoveSymptom,
   onUpdateIntensity,
-  onAnalyze
+  onAnalyze,
+  hideAnalyzeButton = false
 }) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
@@ -273,30 +267,33 @@ export default function SymptomPanel({
         </div>
       </div>
 
-      {/* --- FOOTER --- */}
-      <div className="flex-none p-4 border-t border-slate-100 bg-white z-20">
-        <button
-          onClick={() => {
-            const symptomsList = selectedSymptoms
-              .map((s) => (s.symptom || s.id || s.label || ""))
-              .map((t) => String(t).trim())
-              .filter(Boolean);
-            const payload = { symptoms: symptomsList.join(', '), lang: 'fr' };
-            if (onAnalyze) onAnalyze(payload);
-          }}
-          disabled={selectedSymptoms.length === 0}
-          className={`
-            w-full flex items-center justify-center gap-3 py-3.5 rounded-xl font-bold text-sm tracking-wide shadow-xl transition-all transform active:scale-[0.98]
-            ${selectedSymptoms.length > 0
-              ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-orange-500/30 hover:shadow-orange-500/50 hover:-translate-y-0.5 cursor-pointer"
-              : "bg-slate-100 text-slate-400 cursor-not-allowed shadow-none"
-            }
-          `}
-        >
-          {selectedSymptoms.length > 0 ? <Activity className="w-5 h-5 animate-pulse" /> : <AlertTriangle className="w-5 h-5" />}
-          {selectedSymptoms.length > 0 ? "LANCER L'ANALYSE" : "AJOUTEZ DES SYMPTÔMES"}
-        </button>
-      </div>
+  
+      {!hideAnalyzeButton && (
+        <div className="flex-none p-4 border-t border-slate-100 bg-white z-20">
+          <button
+            onClick={() => {
+              const symptomsList = selectedSymptoms
+                .map((s) => (s.symptom || s.id || s.label || ""))
+                .map((t) => String(t).trim())
+                .filter(Boolean);
+              const payload = { symptoms: symptomsList.join(', '), lang: 'fr' };
+              if (onAnalyze) onAnalyze(payload);
+            }}
+            disabled={selectedSymptoms.length === 0}
+            className={`
+              w-full flex items-center justify-center gap-3 py-3.5 rounded-xl font-bold text-sm tracking-wide shadow-xl transition-all transform active:scale-[0.98]
+              ${selectedSymptoms.length > 0
+                ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-orange-500/30 hover:shadow-orange-500/50 hover:-translate-y-0.5 cursor-pointer"
+                : "bg-slate-100 text-slate-400 cursor-not-allowed shadow-none"
+              }
+            `}
+          >
+            {selectedSymptoms.length > 0 ? <Activity className="w-5 h-5 animate-pulse" /> : <AlertTriangle className="w-5 h-5" />}
+            {selectedSymptoms.length > 0 ? "LANCER L'ANALYSE" : "AJOUTEZ DES SYMPTÔMES"}
+          </button>
+        </div>
+      )}
+     
     </div>
   );
 }
