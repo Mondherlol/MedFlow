@@ -1,5 +1,5 @@
 // src/pages/doctor/Home.jsx
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { use, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CalendarDays, Clock, DollarSign, Edit, Pause } from "lucide-react";
 import StatCard from "../../components/SuperAdmin/Dashboard/StatCard";
@@ -163,7 +163,7 @@ export default function Home() {
                     <StatCard icon={<CalendarDays className="h-5 w-5" />} label="Consultations" value={consultations.length} />
                   </div>
                   <div>
-                    <StatCard icon={<DollarSign className="h-5 w-5" />} label="Argent généré" value={"185 DT"} />
+                    <StatCard icon={<DollarSign className="h-5 w-5" />} label="Argent généré" value={`${consultations.length * user?.doctor?.tarif_consultation || 0} TND `} />
                   </div>
                   
                 </div>

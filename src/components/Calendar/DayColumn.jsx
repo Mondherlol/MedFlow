@@ -2,14 +2,6 @@ import React, { useCallback } from "react";
 import { useDroppable, useDraggable } from "@dnd-kit/core";
 import { CalendarCog } from "lucide-react";
 
-/**
- * DayColumn component extracted from WeekCalendar.
- * Props:
- * - dayIdx, hours, slotMinutes, slotHeight, availability, consultations
- * - renderEvent(to render inner event content)
- * - primary, isOver, overMinutesForDay, draggingGhost
- * - toMinutes, pxPerMinute
- */
 const DayColumn = React.memo(
   React.forwardRef(function DayColumn(
     {
@@ -28,6 +20,7 @@ const DayColumn = React.memo(
       editMode,
       toMinutes,
       pxPerMinute,
+      doctorMode,
     },
     ref
   ) {
@@ -126,6 +119,7 @@ const DayColumn = React.memo(
             renderEvent={renderEvent}
             onEventClick={onEventClick}
             editMode={editMode}
+            doctorMode={doctorMode}
           />
         ))}
       </div>
@@ -141,6 +135,7 @@ const DraggableEvent = React.memo(function DraggableEvent({
   renderEvent,
   onEventClick,
   editMode,
+  doctorMode = false,
 }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: String(event.id),
@@ -155,6 +150,14 @@ const DraggableEvent = React.memo(function DraggableEvent({
       {...attributes}
       {...listeners}
       data-event
+      onClick={(e)=>
+       {
+        e.stopPropagation();
+        if(! doctorMode ) return;
+        const payload = event.raw && typeof event.raw === "object" ? event.raw : event;
+        onEventClick && onEventClick(payload);
+       }
+      }
       onContextMenu={(e) => {
         e.preventDefault();
         if (isDragging) return;

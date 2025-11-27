@@ -1,6 +1,6 @@
 import { memo } from "react";
 
-const EventCard = memo(function EventCard({ title, start, end, cancelled, provisoire }) {
+const EventCard = memo(function EventCard({ title, start, end, cancelled, provisoire, doctorMode = false }) {
   const rootExtra = cancelled
     ? ""
     : provisoire
@@ -20,7 +20,7 @@ const EventCard = memo(function EventCard({ title, start, end, cancelled, provis
     : "text-slate-600 border-slate-200 bg-slate-50";
 
   return (
-    <div className={`h-full cursor-grab w-full flex flex-col justify-between rounded-md overflow-hidden ${rootExtra}`}>
+    <div className={`h-full cursor-${doctorMode ? "pointer" : "grab"} w-full flex flex-col justify-between rounded-md overflow-hidden ${rootExtra}`}>
       <div className="px-2 pt-1">
         <div
           className={`text-[12px] font-semibold leading-tight truncate ${titleClass}`}

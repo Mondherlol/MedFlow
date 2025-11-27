@@ -23,6 +23,7 @@ export default function WeekCalendarDnD({
   consultationProvisoire,
   setConsultationProvisoire,
   loading = false,
+  doctorMode=false,
 }) {
   const primary = theme?.primary || "#0ea5e9";
   const secondary = theme?.secondary || "#0f172a";
@@ -67,8 +68,7 @@ export default function WeekCalendarDnD({
     return arr;
   }, [weekStart]);
 
-  // Normalize availability into an array per day (new format only):
-  // expect [{ id, weekday, slots: [{start,end}, ...] }, ...]
+
   const availabilityByDay = useMemo(() => {
     const byDay = Array.from({ length: 7 }, () => []);
     (availability || []).forEach((a) => {
@@ -195,7 +195,6 @@ const handleDragEnd = (e) => {
     return;
   }
 
-  // existing behavior for real consultations: update array and call onChange
   const updated = consultations.map((c) => {
     if (String(c.id) !== String(base.id)) return c;
     const newDate = new Date(weekStart);
@@ -236,13 +235,13 @@ const handleDragEnd = (e) => {
           end={end}
           cancelled={cancelled}
           provisoire={provisoire}
+          doctorMode={doctorMode}
         />
       );
     },
     [fromMinutes, toMinutes]
   );
 
-  // Normalize consultations into internal shape expected by DayColumn
 const normalizedConsultations = useMemo(() => {
   const base = (consultations || [])
     .map((c) => {
@@ -308,7 +307,6 @@ const normalizedConsultations = useMemo(() => {
 }, [consultations, days, consultationProvisoire]);
 
 
-  // DayColumn and DraggableEvent extracted to ./DayColumn.jsx
   return (
     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden relative">
       {loading && (
@@ -399,6 +397,7 @@ const normalizedConsultations = useMemo(() => {
               draggingGhost={ghost}
               onEventClick={onEventClick}
               editMode={editMode}
+              doctorMode={doctorMode}
             />
           ))}
         </div>
