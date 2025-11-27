@@ -57,9 +57,11 @@
     "vite": "^7.2.4",
     "vite-plugin-svgr": "^4.5.0"
   },
-  "resolutions": {
+  "overrides": {
   "esbuild": "npm:esbuild-wasm@0.17.19"
-  }
+}
+
+  
   
 
 }

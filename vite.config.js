@@ -8,4 +8,14 @@ export default defineConfig({
   plugins: [react(), tailwindcss(), svgr()],
   // Pour importer des fichiers FBX
   assetsInclude: ['**/*.fbx'],
+  resolve: {
+    alias: {
+      esbuild: "esbuild-wasm"
+    }
+  },
+    optimizeDeps: {
+    esbuildOptions: {
+      target: "esnext"
+    }
+  }
 })
