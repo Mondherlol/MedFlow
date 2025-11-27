@@ -11,6 +11,7 @@ function cn(...inputs) {
   return twMerge(clsx(inputs));
 }
 
+
 // --- CONFIGURATION DE LA DOULEUR ---
 const PAIN_LEVELS = [
   { label: "Léger", emoji: "🙂", color: "bg-emerald-400", text: "text-emerald-600", gradient: "from-emerald-300 to-emerald-500", shadow: "shadow-emerald-200" },

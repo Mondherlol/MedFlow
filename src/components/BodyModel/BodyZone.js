@@ -90,8 +90,10 @@ const BODY_ZONES = {
     label: "Fesses",
     parts: ["Fesse"],
   },
-
-  
+  cheeks : {
+    label: "Joues",
+    parts: ["JoueGauche", "JoueDroit"],
+  },
   other: {
     label: "Autre région",
     parts: [],

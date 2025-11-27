@@ -58,7 +58,7 @@ export default function ClinicNavbar() {
     const patientLinks = [
         { label : "Accueil", path: "/patient", icon: null},
         { label: "Mes rendez-vous", path: "/patient/rdv", icon: null},
-        { label: "Diagnostique IA", path: "/body", icon: <HeartPlus className="w-4 h-4"/> },
+        { label: "Diagnostique IA", path: "/diagnostic", icon: <HeartPlus className="w-4 h-4"/> },
     ];
 
     const isClinicHome = loc.pathname.toLowerCase().includes("home");

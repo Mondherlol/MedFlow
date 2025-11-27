@@ -14,15 +14,11 @@ import CustomOrbitControls from "./CustomOrbitControl";
 import ControlPanel from "./ControlPanel";
 import SymptomPanel from "./SymptomPanel";
 
-// Helper local: get zone label for a part
 function getZoneLabelForPart(partName) {
   const key = getZoneKeyForPart(partName);
   return getZoneName(key) ?? BODY_ZONES.other.label;
 }
 
-/**
- * Composant principal
- */
 export default function BodyModel3D() {
   const [selectedParts, setSelectedParts] = useState([]);
   const [activePart, setActivePart] = useState(null);

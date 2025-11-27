@@ -7,6 +7,11 @@ export default function TriageLoader({ open, onCancel }) {
     "Consultation en cours avec le Dr. Châtaigne... 🍂",
     "Regarde les battements de votre tamagotchi médical... 💓",
     "Mise à jour des neurones du diagnostic... 🧠",
+    "Préparation de la potion de guérison... 🧪",
+    "Vérification des signes vitaux du hérisson... ❤️",
+    "Réglage des paramètres du stéthoscope... 🩺",
+    "Collecte des données de santé... 📊",
+    "Finalisation du diagnostic... 💊",
     "Analyse en cours — presque fini ! 🚀",
   ];
 

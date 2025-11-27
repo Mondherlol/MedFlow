@@ -1,4 +1,5 @@
 import { useFBX } from "@react-three/drei";
+import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 
 import * as THREE from "three";
 import { useEffect, useRef, useState } from "react";
@@ -19,8 +20,19 @@ function FBXHuman({
 
   useEffect(() => {
     if (!fbx) return;
+    // Clone the loaded FBX to avoid reusing the same Object3D across mounts.
+    // Reusing the original can cause the model to disappear when navigating
+    // because the same Object3D may already be attached to another scene.
+    let clonedFbx;
+    try {
+      clonedFbx = SkeletonUtils.clone(fbx);
+    } catch (err) {
+      // Fallback to shallow clone if SkeletonUtils isn't available for some reason
+      clonedFbx = fbx.clone(true);
+    }
+
     const found = [];
-    fbx.traverse((n) => {
+    clonedFbx.traverse((n) => {
       if (n.isMesh) found.push(n);
     });
 
@@ -42,6 +54,19 @@ function FBXHuman({
     setMeshes(found);
     // informer le parent que les meshes sont prêts (pour centrage / focus)
     if (typeof onMeshesReady === "function") onMeshesReady(found);
+
+    // Cleanup: dispose cloned materials when this effect is torn down
+    return () => {
+      found.forEach((m) => {
+        if (m.material) {
+          if (Array.isArray(m.material)) {
+            m.material.forEach((mat) => mat.dispose && mat.dispose());
+          } else {
+            m.material.dispose && m.material.dispose();
+          }
+        }
+      });
+    };
   }, [fbx]);
 
   // Mise à jour des couleurs en fonction de la sélection

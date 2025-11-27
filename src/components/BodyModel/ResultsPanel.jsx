@@ -1,29 +1,32 @@
 import React, { useState } from "react";
-import { 
-  AlertTriangle, Stethoscope, CheckCircle, Activity, X, 
-  ChevronDown, ChevronUp, Clock, User, Heart, Phone, Calendar
+import {
+    AlertTriangle, Stethoscope, CheckCircle, Activity, X,
+    ChevronDown, ChevronUp, Clock, User, Heart, Phone, Calendar,
+    FileText, Pill, Users
 } from "lucide-react";
 import { getImageUrl } from "../../utils/image";
+import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 
 // Mappage de sévérité optimisé (sans couleurs en dur dans le nom)
 const severityMap = (sev) => {
-  if (!sev) return { color: "text-slate-600", bg: "bg-slate-50", Icon: Activity, name: "Non Classifié" };
-  const s = String(sev).toLowerCase();
-  
-  if (s.includes("grave") || s.includes("sévère") || s.includes("severe")) {
-    return { color: "text-red-700", bg: "bg-red-50", Icon: AlertTriangle, name: "Grave" };
-  }
-  if (s.includes("moyen") || s.includes("mod") || s.includes("moder")) {
-    return { color: "text-amber-700", bg: "bg-amber-50", Icon: Stethoscope, name: "Modéré" };
-  }
-  // Par défaut : Léger
-  return { color: "text-emerald-700", bg: "bg-emerald-50", Icon: CheckCircle, name: "Léger" };
+    if (!sev) return { color: "text-slate-600", bg: "bg-slate-50", Icon: Activity, name: "Non Classifié" };
+    const s = String(sev).toLowerCase();
+
+    if (s.includes("grave") || s.includes("sévère") || s.includes("severe")) {
+        return { color: "text-red-700", bg: "bg-red-50", Icon: AlertTriangle, name: "Grave" };
+    }
+    if (s.includes("moyen") || s.includes("mod") || s.includes("moder")) {
+        return { color: "text-amber-700", bg: "bg-amber-50", Icon: Stethoscope, name: "Modéré" };
+    }
+    // Par défaut : Léger
+    return { color: "text-emerald-700", bg: "bg-emerald-50", Icon: CheckCircle, name: "Léger" };
 };
 
-// Fonction utilitaire pour formater les traitements moches
+// Fonction utilitaire pour formater les traitements (retourne toujours un tableau)
 const formatTreatment = (treatment) => {
-    if (!treatment) return 'Non spécifié.';
-    // Remplace les ; par des sauts de ligne + tirets, et nettoie les espaces
+    if (!treatment) return [];
+    // Sépare par ';' et nettoie les espaces
     return treatment.split(';').map(item => item.trim()).filter(item => item.length > 0);
 };
 
@@ -38,16 +41,17 @@ const DetailsCard = ({ result, isPrimary = false, isExpanded, onToggle, emergenc
     const doctorsAvailable = result.doctors && result.doctors.some(d => d.full_name);
 
     return (
-        <div 
-            className={`
-                rounded-xl border shadow-lg overflow-hidden bg-white transition-all duration-300
-                ${isPrimary ? 'border-blue-500 ring-4 ring-blue-100' : 'border-slate-200 hover:shadow-xl'}
-            `}
-        >
+        <motion.div
+                layout
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.18 }}
+                className={`rounded-2xl overflow-hidden bg-white transition-all duration-300 shadow-sm ${isPrimary ? 'ring-2 ring-sky-50 border border-sky-100' : 'border border-slate-100 hover:shadow-md'}`}
+            >
             {/* Tête de Carte : Informations principales et badge */}
-            <div className={`flex items-center gap-4 p-5 ${bg}`}>
-                <div className="flex-none p-3 rounded-full bg-white shadow-md">
-                    <Icon className={`w-8 h-8 ${color}`} />
+            <div className={`flex items-center gap-4 p-5 ${bg} bg-opacity-60`}> 
+                <div className="flex-none p-3 rounded-lg bg-white/90 shadow">
+                    <Icon className={`w-7 h-7 ${color}`} />
                 </div>
                 
                 <div className="flex-1 min-w-0">
@@ -60,20 +64,17 @@ const DetailsCard = ({ result, isPrimary = false, isExpanded, onToggle, emergenc
                             </span>
                         )}
                     </div>
-                    <div className="text-sm text-slate-500 mt-0.5">
-                        <Heart className="inline w-3 h-3 mr-1 text-slate-400" />
-                        {result.specialty || 'Spécialité Inconnue'}
+                    <div className="text-sm text-slate-500 mt-0.5 flex items-center gap-2">
+                        <Heart className="inline w-3 h-3 text-slate-400" />
+                        <span className="font-medium">{result.specialty || 'Spécialité Inconnue'}</span>
                     </div>
                 </div>
 
                 <div className="text-right flex-none">
-                    {/* Badge de Sévérité */}
-                    <span className={`inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full ${color} ${bg} border border-current`}>
-                        {name}
-                    </span>
-                    <div className="mt-1">
-                        <div className="text-xs text-slate-500">Confiance</div>
+                    <div className="text-xs text-slate-500">Confiance</div>
+                    <div className="mt-1 flex items-baseline justify-end gap-3">
                         <div className="text-lg font-extrabold text-slate-900 leading-tight">{confidencePercent}</div>
+                        <span className={`inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-full ${color} ${bg} border border-current`}>{name}</span>
                     </div>
                 </div>
 
@@ -89,72 +90,86 @@ const DetailsCard = ({ result, isPrimary = false, isExpanded, onToggle, emergenc
             {((isPrimary || isExpanded)) && (
                 <div className="p-5 border-t border-slate-100">
                     
-                    {/* Section Détails - Formatage Espacé */}
-                    <div className="space-y-4">
-                        <p className="text-sm text-slate-700">
-                            <strong className="text-slate-900 block mb-1">Cause principale:</strong> 
-                            {result.cause || 'Non documentée.'}
-                        </p>
-                        
-                        <div className="text-sm text-slate-700">
-                            <strong className="text-slate-900 block mb-1">Traitement suggéré:</strong> 
-                            {treatments.length > 0 ? (
-                                <ul className="list-disc ml-5 space-y-0.5">
-                                    {treatments.map((t, idx) => <li key={idx}>{t}</li>)}
-                                </ul>
-                            ) : (
-                                'Consultez un spécialiste.'
-                            )}
+                    {/* Section Détails - Présentation compacte en 3 colonnes */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="flex items-start gap-3 min-w-0">
+                            <FileText className="w-5 h-5 text-sky-600 mt-1" />
+                            <div className="min-w-0">
+                                <div className="text-sm text-slate-900 font-semibold">Cause principale</div>
+                                <div className="text-sm text-slate-700 truncate">{result.cause || 'Non documentée.'}</div>
+                            </div>
                         </div>
-                        
-                        <p className="text-sm text-slate-700">
-                            <strong className="text-slate-900 block mb-1">Groupes à risque:</strong> 
-                            {result.at_risk_age || 'Toutes tranches d’âge.'}
-                        </p>
+
+                        <div className="flex items-start gap-3 min-w-0">
+                            <Pill className="w-5 h-5 text-amber-600 mt-1" />
+                            <div className="min-w-0">
+                                <div className="text-sm text-slate-900 font-semibold">Traitements suggérés</div>
+                                {treatments.length > 0 ? (
+                                    <div className="text-sm text-slate-700 truncate">{treatments.join(', ')}</div>
+                                ) : (
+                                    <div className="text-sm text-slate-700">Consultez un spécialiste.</div>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="flex items-start gap-3 min-w-0">
+                            <Users className="w-5 h-5 text-emerald-600 mt-1" />
+                            <div className="min-w-0">
+                                <div className="text-sm text-slate-900 font-semibold">Groupes à risque</div>
+                                <div className="text-sm text-slate-700">{result.at_risk_age || 'Toutes tranches d’âge.'}</div>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Section Médecins/Actions */}
                     <div className="mt-5 pt-5 border-t border-slate-100">
-                        <strong className="text-sm text-slate-900 block mb-3">
-                            <User className="inline w-4 h-4 mr-1 align-sub" /> 
-                            {doctorsAvailable ? `Médecins Recommandés en ${result.specialty}` : `Spécialistes en ${result.specialty}`}
+                        <strong className="text-sm text-slate-900 mb-3 flex items-center gap-2">
+                            <User className="inline w-4 h-4 text-sky-600" />
+                            {doctorsAvailable ? `Médecins recommandés — ${result.specialty}` : `Spécialistes — ${result.specialty}`}
                         </strong>
-                        
+
                         {doctorsAvailable ? (
                             <ul className="space-y-3">
                                 {result.doctors.filter(d => d.full_name).slice(0, 3).map((d, idx) => (
-                                    <li key={idx} className="flex items-center justify-between text-sm text-slate-700 bg-slate-50 p-3 rounded-lg border border-slate-100">
-                                        { d.photo_url ? (
-                                            <img src={getImageUrl(d.photo_url)} alt={d.full_name || 'Dr. Anonyme'} className="w-8 h-8 rounded-full mr-3" />
-                                        ) : <span className="w-8 h-8 rounded-full bg-slate-200 grid place-items-center mr-3">
-                                            <User className="w-5 h-5 text-slate-400" />
-                                        </span> }
-                                        <div className="font-medium truncate">{d.full_name || 'Dr. Anonyme'}</div>
-                                        <button 
-                                            onClick={() => alert(`Prendre RDV avec ${d.full_name}`)}
-                                            className="ml-4 flex items-center px-3 py-1 bg-blue-600 text-white text-xs font-semibold rounded-full hover:bg-blue-700 transition"
-                                        >
-                                            <Calendar className="w-3 h-3 mr-1" /> RDV
-                                        </button>
+                                    <li key={idx} className="flex items-center justify-between text-sm text-slate-700 bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
+                                        <div className="flex items-center gap-3 min-w-0">
+                                            { d.photo_url ? (
+                                                <img src={getImageUrl(d.photo_url)} alt={d.full_name || 'Dr. Anonyme'} className="w-10 h-10 rounded-full" />
+                                            ) : (
+                                                <span className="w-10 h-10 rounded-full bg-slate-100 grid place-items-center">
+                                                    <User className="w-5 h-5 text-slate-400" />
+                                                </span>
+                                            )}
+                                            <div className="font-medium truncate">{d.full_name || 'Dr. Anonyme'}</div>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <Link
+                                                to={`/patient/consultations/new?doctor=${d.id}`}
+                                                className="ml-4 flex cursor-pointer items-center px-3 py-1 bg-sky-600 text-white text-xs font-semibold rounded-full hover:bg-sky-700 transition"
+                                            >
+                                                <Calendar className="w-3 h-3 mr-1" />Prendre RDV
+                                            </Link>
+                                        </div>
                                     </li>
                                 ))}
                                 {result.doctors.length > 3 && <li className="text-xs text-slate-400 ml-3 mt-1">... et {result.doctors.length - 3} autres.</li>}
                             </ul>
                         ) : (
-                            <div className={`p-3 rounded-lg ${bg} ${color}`}>
-                                <p className="text-sm font-medium">
-                                    <Clock className="inline w-4 h-4 mr-2" />
-                                    Aucun médecin de cette spécialité listé dans la clinique pour le moment.
+                            <div className={`p-4 rounded-xl bg-white border border-slate-100 shadow-sm`}> 
+                                <p className="text-sm font-medium text-slate-700 flex items-center gap-2">
+                                    <Clock className="inline w-4 h-4 text-sky-500" />
+                                    Aucun médecin de cette spécialité dans la clinique pour le moment.
                                 </p>
-                                <p className="text-xs mt-1">
+                                <p className="text-xs mt-2 text-slate-500">
                                     En cas d'urgence, veuillez contacter le <strong className="font-bold">{emergencyNumber}</strong>.
                                 </p>
                             </div>
                         )}
                     </div>
+                    
                 </div>
             )}
-        </div>
+        </motion.div>
     );
 };
 
@@ -179,7 +194,7 @@ export default function ResultsPanel({ results = [], best_confidence = null, onC
         <div className="w-full h-full flex flex-col bg-white rounded-xl shadow-2xl ring-1 ring-slate-200 overflow-hidden">
             
             {/* En-tête : Couleurs unies et icône pro */}
-            <div className="flex items-center justify-between px-6 py-4 bg-slate-800 text-white shadow-md">
+            <div className="flex items-center justify-between px-6 py-4 bg-sky-800 text-white shadow-md">
                 <div className="flex items-center">
                     <Stethoscope className="w-6 h-6 mr-3" />
                     <div>
@@ -193,7 +208,7 @@ export default function ResultsPanel({ results = [], best_confidence = null, onC
                 {/* Bouton de Fermeture */}
                 <button 
                     onClick={onClose} 
-                    className="p-2 rounded-full bg-slate-700 text-white hover:bg-slate-600 transition"
+                    className="p-2 rounded-full bg-slate-200 text-slate-700 cursor-pointer hover:bg-slate-300 transition hover:scale-95"
                     aria-label="Fermer le panneau de résultats"
                 >
                     <X className="w-5 h-5" />

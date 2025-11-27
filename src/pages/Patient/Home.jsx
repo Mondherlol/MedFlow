@@ -10,10 +10,15 @@ import {
     Edit3,
     Activity
 } from "lucide-react";
+import ConsultationCard from "../../components/Patient/ConsultationCard";
 import { useAuth } from "../../context/authContext";
+import toast from "react-hot-toast";
+import api from "../../api/axios";
 
 export default function HomePatient() {
     const { user } = useAuth() || {};
+
+    const [pastAppointments, setPastAppointments] = useState([]);
 
     // MOCK DATA — vous remplacerez par vos appels API
     const [pendingRequests, setPendingRequests] = useState(3);
@@ -25,37 +30,33 @@ export default function HomePatient() {
         clinic: "Clinique Saint-Luc",
     });
 
-    const [pastAppointments, setPastAppointments] = useState([
-        { id: 11, date: "2025-11-10", time: "09:15", doctor: "Dr. Legrand", status: "Terminé" },
-        { id: 10, date: "2025-10-23", time: "14:00", doctor: "Dr. Martin", status: "Annulé" },
-        { id: 9, date: "2025-09-02", time: "11:00", doctor: "Dr. Nguyen", status: "Terminé" },
-    ]);
+
 
     const [invoices, setInvoices] = useState([
         { id: "F-2025-001", date: "2025-11-05", amount: "45.00€", status: "Payée" },
         { id: "F-2025-002", date: "2025-10-01", amount: "60.00€", status: "En attente" },
     ]);
 
-    // Symptom test mock
-    const [runningTest, setRunningTest] = useState(false);
     const [testResult, setTestResult] = useState(null);
 
     useEffect(() => {
         // placeholder if later we fetch real data on mount
+        fetchPatientConsultations();
     }, []);
 
-    function startSymptomTest() {
-        setRunningTest(true);
-        setTestResult(null);
-        // simulate IA call
-        setTimeout(() => {
-            setRunningTest(false);
-            setTestResult({
-                probable: "Rhume (probabilité élevée)",
-                advice: "Repos, hydratation, si fièvre > 38.5°C consultez un médecin."
-            });
-        }, 1400);
+    const fetchPatientConsultations = async () => {
+        try{
+            const response = await api.get(`/api/consultations/by-patient/?patient=${user.id}/`);
+            const data =  response.data.data;
+            // console.log("Consultations data:", data);
+            setPastAppointments(data);
+            console.log("Fetched consultations:", data);
+        }catch(error){
+            toast.error("Erreur lors du chargement des consultations.");
+            console.log("Error fetching consultations:", error);
+        }
     }
+
 
     return (
         <div className="min-h-[80dvh] bg-gradient-to-b from-slate-50 to-slate-100/60 p-6 md:p-10">
@@ -180,13 +181,7 @@ export default function HomePatient() {
 
                         <div className="space-y-3">
                             {pastAppointments.map((p) => (
-                                <div key={p.id} className="flex items-center justify-between bg-slate-50 rounded-md p-3">
-                                    <div>
-                                        <div className="text-sm font-medium">{p.date} · {p.time}</div>
-                                        <div className="text-xs text-slate-500">{p.doctor} · {p.status}</div>
-                                    </div>
-                                    <div className="text-sm text-slate-700">{p.status === "Terminé" ? <span className="text-emerald-600">Terminé</span> : <span className="text-rose-600">{p.status}</span>}</div>
-                                </div>
+                                <ConsultationCard key={p.id} consultation={p} />
                             ))}
                         </div>
                     </div>
@@ -204,9 +199,9 @@ export default function HomePatient() {
                             <div className="mt-4">
                                 <p className="text-xs text-slate-500">Ce test est indicatif et ne remplace pas un avis médical.</p>
                                 <div className="mt-3 flex gap-2">
-                                    <button onClick={startSymptomTest} disabled={runningTest} className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-slate-900 text-white">
-                                        {runningTest ? "Analyse en cours…" : "Lancer le test"}
-                                    </button>
+                                    <Link to="/diagnostic"  className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-slate-900 text-white">
+                                        Lancer le test
+                                    </Link>
                                     <Link to="/patient/medical-record" className="inline-flex items-center gap-2 px-3 py-2 rounded-md border">Voir dossier</Link>
                                 </div>
 
