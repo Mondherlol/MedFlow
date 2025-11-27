@@ -131,7 +131,7 @@ export default function MyAppointments() {
                 Vous n'avez aucune demande envoyée.
               </div>
             ) : (
-              requests.map((r) => <RequestCard key={r.id} request={r} />)
+              requests.map((r) => <RequestCard key={r.id} request={r} onRequestDeleted={fetchRequests} />)
             )}
           </div>
         )}
