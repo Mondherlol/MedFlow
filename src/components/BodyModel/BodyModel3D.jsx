@@ -176,7 +176,12 @@ export default function BodyModel3D() {
   
         { 
           analysisResults ?
-                      <ResultsPanel results={analysisResults.results || []} best_confidence={analysisResults.best_confidence} onClose={() => setAnalysisResults(null)} />
+                      <ResultsPanel 
+                        results={analysisResults.results || []} 
+                        best_confidence={analysisResults.best_confidence} 
+                        onClose={() => setAnalysisResults(null)} 
+                        selectedSymptoms={selectedSymptoms}
+                      />
           :
         <div className="relative">
           {/** We can toggle a global overlay that covers both the 3D model and the symptom panel. */}

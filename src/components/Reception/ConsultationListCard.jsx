@@ -11,6 +11,7 @@ import {
   FileText,
   ClipboardPlus,
 } from "lucide-react";
+import { getImageUrl } from "../../utils/image";
 
 export default function ConsultationListCard({
   consultation: c,
@@ -40,8 +41,7 @@ export default function ConsultationListCard({
     c.doctor?.full_name || c.doctorName || c.medecin_name || "—";
 
   const avatar =
-    c.patient?.avatar || c.patient?.user?.avatar || c.avatar || null;
-
+    c.patient?.photo_url ? getImageUrl(c.patient.photo_url) : null;
   const phone = c.patient?.phone || c.patient?.user?.phone || "";
 
   const status = (c.statusConsultation || c.status || "").toLowerCase();

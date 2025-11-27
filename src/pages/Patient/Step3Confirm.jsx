@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getSpecialiteDisplay } from "../../utils/specialite";
 import SlotList from "./SlotList";
 import DiagnosticIAModal from "./DiagnosticIAModal";
@@ -25,6 +25,21 @@ function Step3Confirm({
   const [diagnosticData, setDiagnosticData] = useState(null);
   const contactEmail = user?.email || "—";
   const contactPhone = user?.phone || user?.phone_number || "—";
+
+  // Charger les données du diagnostic depuis sessionStorage au montage
+  useEffect(() => {
+    const storedData = sessionStorage.getItem('diagnosticData');
+    if (storedData && autoDiagnosticId) {
+      try {
+        const parsed = JSON.parse(storedData);
+        setDiagnosticData(parsed);
+        // Nettoyer le sessionStorage après utilisation
+        sessionStorage.removeItem('diagnosticData');
+      } catch (err) {
+        console.error('Erreur lors du parsing des données du diagnostic:', err);
+      }
+    }
+  }, [autoDiagnosticId]);
 
   const handleDiagnosticConfirm = (diagnosticId, analysisResults) => {
     setAutoDiagnosticId(diagnosticId);

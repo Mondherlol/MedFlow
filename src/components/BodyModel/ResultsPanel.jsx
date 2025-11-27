@@ -6,7 +6,8 @@ import {
 } from "lucide-react";
 import { getImageUrl } from "../../utils/image";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import api from "../../api/axios";
 
 // Mappage de sévérité optimisé (sans couleurs en dur dans le nom)
 const severityMap = (sev) => {
@@ -32,7 +33,7 @@ const formatTreatment = (treatment) => {
 
 // --- Sous-Composant pour la Carte de Détails ---
 
-const DetailsCard = ({ result, isPrimary = false, isExpanded, onToggle, emergencyNumber = '01 23 45 67 89' }) => {
+const DetailsCard = ({ result, isPrimary = false, isExpanded, onToggle, emergencyNumber = '01 23 45 67 89', onTakeAppointment, savingDiagnostic }) => {
     const { color, bg, Icon, name } = severityMap(result.severity);
     const confidencePercent = result.confidence ? (result.confidence * 100).toFixed(0) + '%' : '—';
     const treatments = formatTreatment(result.treatment);
@@ -143,12 +144,18 @@ const DetailsCard = ({ result, isPrimary = false, isExpanded, onToggle, emergenc
                                             <div className="font-medium truncate">{d.full_name || 'Dr. Anonyme'}</div>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <Link
-                                                to={`/patient/consultations/new?doctor=${d.id}`}
-                                                className="ml-4 flex cursor-pointer items-center px-3 py-1 bg-sky-600 text-white text-xs font-semibold rounded-full hover:bg-sky-700 transition"
+                                            <button
+                                                onClick={() => onTakeAppointment(d.id)}
+                                                disabled={savingDiagnostic}
+                                                className="ml-4 flex cursor-pointer items-center px-3 py-1 bg-sky-600 text-white text-xs font-semibold rounded-full hover:bg-sky-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
                                             >
-                                                <Calendar className="w-3 h-3 mr-1" />Prendre RDV
-                                            </Link>
+                                                {savingDiagnostic ? (
+                                                    <span className="w-3 h-3 rounded-full border-2 border-white/50 border-t-transparent animate-spin mr-1" />
+                                                ) : (
+                                                    <Calendar className="w-3 h-3 mr-1" />
+                                                )}
+                                                Prendre RDV
+                                            </button>
                                         </div>
                                     </li>
                                 ))}
@@ -175,8 +182,50 @@ const DetailsCard = ({ result, isPrimary = false, isExpanded, onToggle, emergenc
 
 // --- Composant Principal ---
 
-export default function ResultsPanel({ results = [], best_confidence = null, onClose }) {
+export default function ResultsPanel({ results = [], best_confidence = null, onClose, selectedSymptoms = [] }) {
+    const navigate = useNavigate();
     const [expandedIndex, setExpandedIndex] = useState(null); // Gère la carte actuellement ouverte
+    const [savingDiagnostic, setSavingDiagnostic] = useState(false);
+
+    // Fonction pour gérer la prise de rendez-vous
+    const handleTakeAppointment = async (doctorId) => {
+        setSavingDiagnostic(true);
+        
+        try {
+            // Préparer les données pour l'API
+            const payload = {
+                symptoms: selectedSymptoms.map(s => ({
+                    symptomeName: s.name || s.label || 'Symptôme inconnu',
+                    intensite: String(s.intensity),
+                    bodyPart: s.partId || 'Non spécifié'
+                })),
+                predictions: results && results.length > 0 
+                    ? results.map(r => ({
+                        disease: r.disease || 'Non identifié',
+                        specialty: r.specialty || 'Non spécifiée',
+                        severity: r.severity || 'Non classifiée',
+                        treatment: r.treatment || 'À déterminer',
+                        at_risk_age: r.at_risk_age || 'Non documenté',
+                        cause: r.cause || 'Non documentée',
+                        confidence: r.confidence || 0
+                    }))
+                    : [],
+                notes: `Analyse IA du ${new Date().toLocaleDateString('fr-FR')} - Confiance globale: ${best_confidence ? (best_confidence * 100).toFixed(1) + '%' : 'N/A'}`
+            };
+
+            // Enregistrer dans la base de données
+            const response = await api.post('/api/auto-diagnostics/', payload);
+            
+            // Rediriger vers la page de prise de rendez-vous avec l'ID du diagnostic et du médecin
+            navigate(`/patient/consultations/new?doctor=${doctorId}&diagnostic=${response.data.id}`);
+        } catch (err) {
+            console.error('Erreur lors de la sauvegarde du diagnostic:', err);
+            // En cas d'erreur, rediriger quand même sans l'ID du diagnostic
+            navigate(`/patient/consultations/new?doctor=${doctorId}`);
+        } finally {
+            setSavingDiagnostic(false);
+        }
+    };
 
     // Trouver le résultat le plus probable (index 0)
     const sortedResults = [...results].sort((a, b) => (b.confidence || 0) - (a.confidence || 0));
@@ -222,7 +271,7 @@ export default function ResultsPanel({ results = [], best_confidence = null, onC
                 {primaryResult && (
                     <div className="mb-8">
                         {/* Carte Primaire */}
-                        <DetailsCard result={primaryResult} isPrimary={true} />
+                        <DetailsCard result={primaryResult} isPrimary={true} onTakeAppointment={handleTakeAppointment} savingDiagnostic={savingDiagnostic} />
                     </div>
                 )}
 
@@ -237,6 +286,8 @@ export default function ResultsPanel({ results = [], best_confidence = null, onC
                                     result={r}
                                     isExpanded={expandedIndex === i}
                                     onToggle={() => toggleExpansion(i)}
+                                    onTakeAppointment={handleTakeAppointment}
+                                    savingDiagnostic={savingDiagnostic}
                                 />
                             ))}
                         </div>

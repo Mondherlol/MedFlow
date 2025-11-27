@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { UserCheck, User, Clock, XCircle, Loader2, CreditCard } from "lucide-react";
 import { getStatusText } from "../../../utils/statusUtils";
+import { getImageUrl } from "../../../utils/image";
 
 export default function ConsultationCard({ consultation: c, onCancel, onPostpone, loadingAction = "" }) {
   const timeStart = c.time || c.heure_debut || "--:--";
@@ -9,7 +10,7 @@ export default function ConsultationCard({ consultation: c, onCancel, onPostpone
   const time = timeEnd ? `${timeStart} — ${timeEnd}` : timeStart;
   const patientName = c.patientName || c.patient?.user?.full_name || "—";
   const doctorName = c.doctorName || c.doctor?.user?.full_name || c.medecin_name || "—";
-  const avatar = c.avatar;
+  const avatar = c.patient?.photo_url ? getImageUrl(c.patient.photo_url) : null;
   const status = (c.status || c.statusConsultation || "").toLowerCase();
 
   // status styles

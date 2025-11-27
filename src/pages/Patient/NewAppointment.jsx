@@ -61,6 +61,7 @@ export default function NewAppointment() {
   const { user } = useAuth() || {};
   const [searchParams] = useSearchParams();
   const doctorParam = searchParams.get("doctor");
+  const diagnosticParam = searchParams.get("diagnostic");
 
   const [doctors, setDoctors] = useState([]);
   const [schedules, setSchedules] = useState([]);
@@ -132,6 +133,56 @@ export default function NewAppointment() {
 
     fetchAll();
   }, [clinic, doctorParam]);
+
+  // Charger le diagnostic automatique si présent dans l'URL
+  useEffect(() => {
+    if (!diagnosticParam) return;
+    
+    const fetchDiagnostic = async () => {
+      try {
+        const response = await api.get(`/api/auto-diagnostics/${diagnosticParam}/`);
+        if (response && response.data) {
+          const diagnostic = response.data;
+          
+          // Formater les données pour l'affichage
+          const diagnosticData = {
+            timestamp: diagnostic.created_at,
+            symptoms: diagnostic.symptoms.map(s => ({
+              name: s.symptomeName || 'Symptôme inconnu',
+              intensity: parseInt(s.intensite) || 0,
+              bodyPart: s.bodyPart || 'Non spécifié'
+            })),
+            maladiesProbables: diagnostic.predictions && diagnostic.predictions.length > 0 
+              ? diagnostic.predictions.map(p => ({
+                  disease: p.disease || 'Non identifié',
+                  confidence: p.confidence ? (p.confidence * 100).toFixed(1) + '%' : 'N/A',
+                  severity: p.severity || 'Non classifiée',
+                  specialty: p.specialty || 'Non spécifiée',
+                  description: p.description || 'Aucune description',
+                  treatment: p.treatment || 'À déterminer',
+                  cause: p.cause || 'Non documentée'
+                }))
+              : [],
+            confidenceGlobale: diagnostic.predictions && diagnostic.predictions.length > 0 && diagnostic.predictions[0].confidence
+              ? (diagnostic.predictions[0].confidence * 100).toFixed(1) + '%' 
+              : 'N/A'
+          };
+          
+          // Mettre à jour les états
+          setAutoDiagnosticId(diagnosticParam);
+          setWantIA(true);
+          // On stocke les données du diagnostic dans Step3Confirm
+          // Pour cela on doit passer diagnosticData via un état
+          sessionStorage.setItem('diagnosticData', JSON.stringify(diagnosticData));
+        }
+      } catch (err) {
+        console.error('Erreur lors du chargement du diagnostic:', err);
+        // Ne pas bloquer l'utilisateur si le diagnostic ne peut pas être chargé
+      }
+    };
+    
+    fetchDiagnostic();
+  }, [diagnosticParam]);
 
   // calcul des créneaux quand médecin choisi
   useEffect(() => {
