@@ -128,9 +128,9 @@ function ConsultationsPanel({
                           patientId: consultation.patient?.id 
                         } 
                       })} 
-                      className="text-xs px-3 py-1 rounded-md bg-white border text-slate-700 hover:bg-slate-50 transition"
+                      className="text-xs  cursor-pointer px-3 py-1 rounded-md bg-white border text-slate-700 hover:bg-sky-500 hover:text-white transition"
                     >
-                      Voir dossier médical
+                      Voir consultation
                     </button>
                   </div>
                 </div>
@@ -164,20 +164,15 @@ function ConsultationsPanel({
                   <div className="flex items-center gap-2">
                     <button 
                       onClick={() => handlePostpone(consultation.id)} 
-                      className="text-xs px-3 py-1 rounded-md bg-amber-50 text-amber-700 hover:bg-amber-100 transition cursor-pointer"
+                      className="text-xs px-3 py-1 cursor-pointer rounded-md bg-amber-50 text-amber-700 hover:bg-amber-100 transition "
                     >
                       Reporter
                     </button>
                     <button 
-                      onClick={() => navigate('/consultation', { 
-                        state: { 
-                          patientName: patientName, 
-                          patientId: consultation.patient?.id 
-                        } 
-                      })} 
-                      className="text-xs px-3 py-1 rounded-md bg-white border text-slate-700 hover:bg-slate-50 transition cursor-pointer"
+                      onClick={() => navigate('/doctor/consultation/'+consultation.id)}
+                      className="text-xs px-3 py-1 rounded-md bg-white border text-slate-700 hover:bg-sky-500 hover:text-white transition cursor-pointer"
                     >
-                      Voir dossier médical
+                      Voir consultation
                     </button>
                   </div>
                 </div>

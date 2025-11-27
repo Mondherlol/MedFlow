@@ -1,10 +1,15 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeft, Calendar, Clock, User, FileText, Pill, Activity, Save, X } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, User, Save, X, FileText } from "lucide-react";
 import api from "../../api/axios";
 import toast from "react-hot-toast";
 import { useAuth } from "../../context/authContext";
 import { getImageUrl } from "../../utils/image";
+import HistoriqueMedical from "../../components/Doctor/ConsultationComponents/HistoriqueMedical";
+import PatientInfoDetailed from "../../components/Doctor/ConsultationComponents/PatientInfoDetailed";
+import DiagnosticEditor from "../../components/Doctor/ConsultationComponents/DiagnosticEditor";
+import OrdonnanceEditor from "../../components/Doctor/ConsultationComponents/OrdonnanceEditor";
+import { getStatusText } from "../../utils/statusUtils";
 
 export default function ConsultationDetails() {
   const { id } = useParams();
@@ -28,10 +33,9 @@ export default function ConsultationDetails() {
   }, [consultation]);
 
   useEffect(() => {
-    if (!consultation && id) {
+    if (id) {
       fetchConsultation();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   async function fetchConsultation() {
@@ -42,6 +46,7 @@ export default function ConsultationDetails() {
       setConsultation(data);
       setDiagnostique(data.diagnostique || "");
       setOrdonnance(data.ordonnance || "");
+      console.log("Fetched consultation:", data);
     } catch (err) {
       console.error(err);
       toast.error("Impossible de charger la consultation");
@@ -189,18 +194,19 @@ export default function ConsultationDetails() {
               </div>
             </div>
             <div className={`px-4 py-2 rounded-lg text-sm font-medium ${
-              consultation.statusConsultation === "confirme" ? "bg-emerald-100 text-emerald-700" :
+              consultation.statusConsultation === "confirme" ? "bg-orange-100 text-orange-700" :
               consultation.statusConsultation === "annule" ? "bg-red-100 text-red-700" :
-              consultation.statusConsultation === "termine" ? "bg-slate-100 text-slate-700" :
+              consultation.statusConsultation === "termine" ? "bg-sky-100 text-sky-700" :
+              consultation.statusConsultation === "encours" ? "bg-green-100 text-green-700" :
               "bg-amber-100 text-amber-700"
             }`}>
-              {consultation.statusConsultation || "En attente"}
+              { getStatusText(consultation.statusConsultation)}
             </div>
           </div>
         </div>
 
         {/* Consultation Info */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-100">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-sky-100 flex items-center justify-center">
@@ -234,73 +240,55 @@ export default function ConsultationDetails() {
               </div>
             </div>
           </div>
-
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-100">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center">
-                <User className="w-5 h-5 text-emerald-600" />
-              </div>
-              <div>
-                <div className="text-xs text-slate-500">Médecin</div>
-                <div className="text-sm font-semibold text-slate-900">
-                  {consultation.doctor?.full_name || user?.doctor?.user?.full_name || "—"}
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Auto Diagnostic */}
         {consultation.auto_diagnostic && (
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-            <div className="flex items-center gap-2 mb-4">
-              <Activity className="w-5 h-5 text-sky-600" />
-              <h2 className="text-lg font-semibold text-slate-900">Auto-diagnostic du patient</h2>
-            </div>
-            <div className="bg-slate-50 rounded-lg p-4 text-sm text-slate-700">
-              {consultation.auto_diagnostic}
+          <div className="bg-gradient-to-r from-sky-50 to-blue-50 rounded-2xl p-6 shadow-sm border border-sky-100">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-lg bg-sky-100 flex items-center justify-center flex-shrink-0">
+                <User className="w-5 h-5 text-sky-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-sm font-semibold text-sky-900 mb-2">Auto-diagnostic du patient</h3>
+                <div className="bg-white/80 rounded-lg p-4 text-sm text-slate-700">
+                  {consultation.auto_diagnostic}
+                </div>
+              </div>
             </div>
           </div>
         )}
 
-        {/* Diagnostique */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-          <div className="flex items-center gap-2 mb-4">
-            <FileText className="w-5 h-5 text-sky-600" />
-            <h2 className="text-lg font-semibold text-slate-900">Diagnostic médical</h2>
-          </div>
-          {editMode ? (
-            <textarea
+        {/* Grid Layout: 2 columns - Left (diagnostic/ordonnance) | Right (patient info) */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Left Column - 3/4 width */}
+          <div className="lg:col-span-3 space-y-6">
+            <DiagnosticEditor
               value={diagnostique}
-              onChange={(e) => setDiagnostique(e.target.value)}
-              placeholder="Saisissez le diagnostic..."
-              className="w-full h-32 px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent resize-none"
+              onChange={setDiagnostique}
+              editMode={editMode}
             />
-          ) : (
-            <div className="bg-slate-50 rounded-lg p-4 text-sm text-slate-700 min-h-[8rem]">
-              {diagnostique || <span className="text-slate-400">Aucun diagnostic saisi</span>}
-            </div>
-          )}
-        </div>
 
-        {/* Ordonnance */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-          <div className="flex items-center gap-2 mb-4">
-            <Pill className="w-5 h-5 text-sky-600" />
-            <h2 className="text-lg font-semibold text-slate-900">Ordonnance</h2>
-          </div>
-          {editMode ? (
-            <textarea
+            <OrdonnanceEditor
               value={ordonnance}
-              onChange={(e) => setOrdonnance(e.target.value)}
-              placeholder="Saisissez l'ordonnance..."
-              className="w-full h-40 px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent resize-none font-mono text-sm"
+              onChange={setOrdonnance}
+              editMode={editMode}
+              patientName={patientName}
             />
-          ) : (
-            <div className="bg-slate-50 rounded-lg p-4 text-sm text-slate-700 min-h-[10rem] font-mono whitespace-pre-wrap">
-              {ordonnance || <span className="text-slate-400 font-sans">Aucune ordonnance rédigée</span>}
+
+            {/* Historique below ordonnance */}
+            <HistoriqueMedical 
+              patientId={patient?.id} 
+              currentConsultationId={consultation.id}
+            />
+          </div>
+
+          {/* Right Column - 1/4 width - Sticky */}
+          <div className="lg:col-span-1">
+            <div className="lg:sticky lg:top-6">
+              <PatientInfoDetailed patientId={patient?.id} />
             </div>
-          )}
+          </div>
         </div>
 
         {/* Metadata */}

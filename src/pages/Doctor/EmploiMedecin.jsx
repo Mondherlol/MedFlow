@@ -31,9 +31,7 @@ export default function EmploiMedecin() {
   };
 
   const handleChange = (updated) => {
-    // TODO: sync API (PUT /api/consultations/:id { date, heure_debut, heure_fin })
-    console.log("Consultation modified:", updated);
-    toast("Modification non sauvegardée (mode consultation seulement)");
+    toast("Action réservée à la réception.", { icon: "ℹ️" });
   };
 
   const handleEventClick = (consultation) => {

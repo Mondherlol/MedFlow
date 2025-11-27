@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { UserCheck, User, Clock, XCircle, Loader2, CreditCard } from "lucide-react";
-
+import { getStatusText } from "../../../utils/statusUtils";
 
 export default function ConsultationCard({ consultation: c, onCancel, onPostpone, loadingAction = "" }) {
   const timeStart = c.time || c.heure_debut || "--:--";
@@ -108,14 +108,3 @@ export default function ConsultationCard({ consultation: c, onCancel, onPostpone
   );
 }
 
-// helper local (copié pour isolement du composant)
-function getStatusText(status) {
-  if (!status) return "—";
-  switch (String(status).toLowerCase()) {
-    case "confirme": return "Confirmé";
-    case "termine": return "Terminé";
-    case "encours": return "En cours";
-    case "annule": return "Annulé";
-    default: return String(status).replace("_", " ");
-  }
-}
