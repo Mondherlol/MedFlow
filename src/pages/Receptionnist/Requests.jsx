@@ -21,6 +21,7 @@ export default function Requests() {
   const [filterDoctor, setFilterDoctor] = useState("all");
   const [filterDiagnostic, setFilterDiagnostic] = useState("all"); // all, with_ia, without_ia
   const [filterSlots, setFilterSlots] = useState("all"); // all, with_slots, without_slots
+  const [filterStatus, setFilterStatus] = useState("pending"); // all, pending, rejected
   const [showFilters, setShowFilters] = useState(false);
 
   const fetchRequests = async (isRefresh = false) => {
@@ -105,6 +106,14 @@ export default function Requests() {
       result = result.filter(r => !r.patient_options || r.patient_options.length === 0);
     }
 
+    // Filtrer par statut
+    if (filterStatus === "pending") {
+      result = result.filter(r => (r.statusDemandeConsultation || 'pending') === 'pending');
+    } else if (filterStatus === "rejected") {
+      result = result.filter(r => r.statusDemandeConsultation === 'rejected');
+    }
+    // Si filterStatus === "all", on ne filtre pas
+
     // Trier
     result.sort((a, b) => {
       switch (sortBy) {
@@ -124,7 +133,7 @@ export default function Requests() {
     });
 
     return result;
-  }, [requests, sortBy, filterDoctor, filterDiagnostic, filterSlots]);
+  }, [requests, sortBy, filterDoctor, filterDiagnostic, filterSlots, filterStatus]);
 
   return (
     <ReceptionistTemplate
@@ -173,7 +182,7 @@ export default function Requests() {
         {/* Panneau de filtres et tri */}
         {showFilters && (
           <div className="bg-white rounded-lg border border-slate-200 p-4 space-y-3">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
               {/* Tri */}
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">Trier par</label>
@@ -231,16 +240,31 @@ export default function Requests() {
                   <option value="without_slots">Sans créneaux</option>
                 </select>
               </div>
+
+              {/* Filtre statut */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">Statut</label>
+                <select
+                  value={filterStatus}
+                  onChange={(e) => setFilterStatus(e.target.value)}
+                  className="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 bg-white focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                >
+                  <option value="pending">En attente</option>
+                  <option value="rejected">Refusées</option>
+                  <option value="all">Toutes</option>
+                </select>
+              </div>
             </div>
 
             {/* Bouton reset filtres */}
-            {(sortBy !== "date_desc" || filterDoctor !== "all" || filterDiagnostic !== "all" || filterSlots !== "all") && (
+            {(sortBy !== "date_desc" || filterDoctor !== "all" || filterDiagnostic !== "all" || filterSlots !== "all" || filterStatus !== "pending") && (
               <button
                 onClick={() => {
                   setSortBy("date_desc");
                   setFilterDoctor("all");
                   setFilterDiagnostic("all");
                   setFilterSlots("all");
+                  setFilterStatus("pending");
                 }}
                 className="text-xs text-sky-600 hover:text-sky-700 font-medium"
               >

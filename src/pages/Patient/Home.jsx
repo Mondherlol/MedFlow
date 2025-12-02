@@ -202,7 +202,6 @@ export default function HomePatient() {
                                     <Link to="/diagnostic"  className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-slate-900 text-white">
                                         Lancer le test
                                     </Link>
-                                    <Link to="/patient/medical-record" className="inline-flex items-center gap-2 px-3 py-2 rounded-md border">Voir dossier</Link>
                                 </div>
 
                                 {testResult && (

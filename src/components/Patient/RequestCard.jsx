@@ -26,12 +26,14 @@ export default function RequestCard({ request, onRequestDeleted }) {
   const [editOpen, setEditOpen] = useState(false);
   const [diagnosticOpen, setDiagnosticOpen] = useState(false);
   const [canceling, setCanceling] = useState(false);
+  const [rejectionNoteOpen, setRejectionNoteOpen] = useState(false);
 
   const doctor = request.doctor || {};
   const doctorName = doctor.full_name || "Médecin";
   const specialty = getSpecialiteDisplay(doctor.specialite) || doctor.specialite || "Spécialité inconnue";
   const tarif = doctor.tarif_consultation || null;
   const duree = doctor.duree_consultation || null;
+  const isRejected = request.statusDemandeConsultation == "rejected";
 
   const patientOptions = request.patient_options || [];
   const createdAgo = timeAgo(request.created_at);
@@ -55,7 +57,7 @@ export default function RequestCard({ request, onRequestDeleted }) {
   return (
     <>
       <article className="flex items-center gap-4 p-4 rounded-2xl bg-white shadow-sm hover:shadow-lg border border-slate-100 transition">
-        <div className="w-1 h-16 rounded-l-full bg-indigo-400" />
+        <div className={`w-1 h-16 rounded-l-full bg-${isRejected ? "red" : "indigo"}-400`} />
 
         <div className="shrink-0">
           {avatar ? (
@@ -107,31 +109,49 @@ export default function RequestCard({ request, onRequestDeleted }) {
             </div>
           )}
 
-          <button
-            onClick={() => setEditOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-100 text-xs transition"
-          >
-            <Pencil className="w-4 h-4" />
-            <span>Modifier</span>
-          </button>
+        {
+          !isRejected && 
+            <>
+            <button
+              onClick={() => setEditOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-100 text-xs transition"
+            >
+              <Pencil className="w-4 h-4" />
+              <span>Modifier</span>
+            </button>
+            
 
-          <button
-            onClick={cancelRequest}
-            disabled={canceling}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-100 text-xs transition disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {canceling ? (
+            <button
+              onClick={cancelRequest}
+              disabled={canceling}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-100 text-xs transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {canceling ? (
+                <>
+                  <div className="w-4 h-4 rounded-full border-2 border-rose-300 border-t-rose-700 animate-spin" />
+                  <span>Annulation...</span>
+                </>
+              ) : (
+                <>
+                  <Trash2 className="w-4 h-4" />
+                  <span>Annuler</span>
+                </>
+              )}
+            </button>
+            </>
+            }
+
+            {
+              isRejected && 
               <>
-                <div className="w-4 h-4 rounded-full border-2 border-rose-300 border-t-rose-700 animate-spin" />
-                <span>Annulation...</span>
+              <div className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-rose-50 text-rose-700 border border-rose-100 text-xs">
+               <span>Demande rejetée</span>
+               <button onClick={() => setRejectionNoteOpen(true)} className="ml-2 underline text-rose-700 hover:text-rose-800 cursor-pointer">
+                Voir la raison
+               </button>
+              </div>
               </>
-            ) : (
-              <>
-                <Trash2 className="w-4 h-4" />
-                <span>Annuler</span>
-              </>
-            )}
-          </button>
+            }
 
           {request.auto_diagnostic && (
             <button
@@ -160,6 +180,37 @@ export default function RequestCard({ request, onRequestDeleted }) {
           autoDiagnostic={request.auto_diagnostic}
           requestId={request.id}
         />
+      )}
+
+      {rejectionNoteOpen && (
+        <div className="fixed h-full inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setRejectionNoteOpen(false)}>
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center">
+                <Trash2 className="w-5 h-5 text-rose-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-slate-900">Demande rejetée</h3>
+            </div>
+            
+            <div className="mb-6">
+              <p className="text-sm text-slate-600 mb-2">Raison du rejet :</p>
+              <div className="bg-rose-50 border border-rose-100 rounded-lg p-4">
+                <p className="text-sm text-slate-700 whitespace-pre-wrap">
+                  {request.receptionist_note || "Aucune raison fournie"}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setRejectionNoteOpen(false)}
+                className="px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium transition"
+              >
+                Fermer
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );

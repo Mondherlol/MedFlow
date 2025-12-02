@@ -228,6 +228,7 @@ const handleDragEnd = (e) => {
       const end = fromMinutes(toMinutes(c.start) + c.duration);
       const cancelled = (c.statusConsultation) === "annule";
       const provisoire = c.id == "provisional";
+      const isPatientPreference = c.isPatientPreference === true;
       return (
         <RdvCard
           title={c.title}
@@ -235,11 +236,12 @@ const handleDragEnd = (e) => {
           end={end}
           cancelled={cancelled}
           provisoire={provisoire}
+          isPatientPreference={isPatientPreference}
           doctorMode={doctorMode}
         />
       );
     },
-    [fromMinutes, toMinutes]
+    [fromMinutes, toMinutes, doctorMode]
   );
 
 const normalizedConsultations = useMemo(() => {

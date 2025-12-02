@@ -33,7 +33,7 @@ const GENDERS = [
 
 const UpdatePatientInfos = () => {
   const navigate = useNavigate();
-  const { user, setUser } = useAuth();
+  const { user, refreshUser } = useAuth();
   const { clinic } = useClinic();
 
   const [loading, setLoading] = useState(true);
@@ -183,6 +183,7 @@ const UpdatePatientInfos = () => {
       if (response.status === 200) {
         toast.success("Vos informations ont été mises à jour avec succès !");
         // Mettre à jour l'utilisateur dans le contexte
+        refreshUser();
         navigate("/patient");
       }
     } catch (error) {
